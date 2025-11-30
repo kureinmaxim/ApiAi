@@ -47,3 +47,10 @@ offline_package/*.whl
 offline_package/*.tar.gz
 offline_packages/*.whl
 offline_packages/*.tar.gz
+
+# Build artifacts and installers
+ApiAi-Setup-*.exe
+*.exe
+temp_installer/
+installer_active.iss
+run_app.bat

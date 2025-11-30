@@ -82,6 +82,8 @@ python3 main.py
 
 > **Note:** Always activate the virtual environment before running the application. On Windows, use `.venv\Scripts\activate`, on macOS/Linux use `source venv/bin/activate`.
 
+> **Installed Version:** The Windows installer does NOT require administrator privileges and installs to `%LOCALAPPDATA%\ApiAi` (user directory). The virtual environment `.venv` is created automatically in the same folder on first run.
+
 ## Configuration
 On first run, the application creates `config_qt.json` automatically. 
 

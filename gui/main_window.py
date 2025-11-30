@@ -32,6 +32,7 @@ class ApiAiMainWindow(QMainWindow):
         
         # Состояние
         self.scale_factor = self.cfg.get("window", {}).get("scale_factor", 1.0)
+        self.current_theme = self.cfg.get("ui", {}).get("theme", "dark")  # "dark" или "light"
         self.expert_mode = False
         self.unlocked = False
         self.require_pin = self.cfg.get("security", {}).get("require_pin", True)
@@ -40,12 +41,12 @@ class ApiAiMainWindow(QMainWindow):
         # Настройка окна
         self.setWindowTitle(f"{self.cfg['app_info']['name']} v{self.cfg['app_info']['version']}")
         self.resize(
-            self.cfg.get("window", {}).get("width", 1200),
-            self.cfg.get("window", {}).get("height", 800)
+            self.cfg.get("window", {}).get("width", 600),
+            self.cfg.get("window", {}).get("height", 600)
         )
         
         # Применение темы
-        apply_theme(self, self.cfg.get("ui", {}).get("theme", "dark"))
+        apply_theme(self, self.current_theme)
         
         # Создание UI
         self._create_ui()
@@ -91,6 +92,14 @@ class ApiAiMainWindow(QMainWindow):
             action.setChecked(abs(self.scale_factor - scale) < 0.01)
             action.triggered.connect(lambda checked, s=scale: self.set_scale(s))
             scale_menu.addAction(action)
+        
+        view_menu.addSeparator()
+        
+        # Theme Toggle
+        theme_action = QAction("🌓 Переключить тему", self)
+        theme_action.setShortcut("Ctrl+T")
+        theme_action.triggered.connect(self.toggle_theme)
+        view_menu.addAction(theme_action)
             
         # PDF Search Menu (как в требованиях)
         search_menu = menubar.addMenu("PDF Search")
@@ -146,6 +155,33 @@ class ApiAiMainWindow(QMainWindow):
         else:
             QMessageBox.information(self, "Info", "Режим эксперта уже активен.")
 
+    def toggle_theme(self):
+        """Переключает между темной и светлой темой"""
+        # Переключаем тему
+        self.current_theme = "light" if self.current_theme == "dark" else "dark"
+        
+        # Применяем новую тему
+        from styles import apply_theme
+        apply_theme(self, self.current_theme)
+        
+        # Сохраняем выбор в конфиг
+        self.save_theme_preference()
+        
+        # Показываем уведомление
+        theme_name = "Темная" if self.current_theme == "dark" else "Светлая"
+        QMessageBox.information(
+            self,
+            "Тема изменена",
+            f"{theme_name} тема применена успешно!"
+        )
+    
+    def save_theme_preference(self):
+        """Сохраняет выбор темы в конфигурационный файл"""
+        if "ui" not in self.cfg:
+            self.cfg["ui"] = {}
+        self.cfg["ui"]["theme"] = self.current_theme
+        self.config_manager.save_config()
+    
     def show_about(self):
         """Показывает информацию о программе"""
         QMessageBox.about(

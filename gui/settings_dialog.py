@@ -95,11 +95,11 @@ class SettingsDialog(QDialog):
         api_group.setLayout(api_layout)
         layout.addWidget(api_group)
 
-        # Telegram Bot
-        telegram_group = QGroupBox("Настройки Telegram Bot API")
+        # AI Server API
+        telegram_group = QGroupBox("Настройки AI Server API")
         telegram_layout = QGridLayout()
 
-        telegram_url_label = QLabel("Bot API URL:")
+        telegram_url_label = QLabel("Server API URL:")
         self.telegram_url_input = QLineEdit()
         self.telegram_url_input.setPlaceholderText("http://localhost:8000/ai_query")
         self.telegram_url_input.textChanged.connect(self._on_telegram_url_changed)
@@ -116,7 +116,7 @@ class SettingsDialog(QDialog):
         self.use_encryption_cb.setChecked(True)
         self.use_encryption_cb.toggled.connect(self._on_encryption_toggled)
         
-        telegram_key_label = QLabel("Bot API Key:")
+        telegram_key_label = QLabel("Server API Key:")
         self.telegram_key_input = QLineEdit()
         self.telegram_key_input.setEchoMode(QLineEdit.Password)
         self.telegram_key_input.setPlaceholderText("secret_key")
@@ -168,7 +168,7 @@ class SettingsDialog(QDialog):
             "💡 <b>Как получить API ключи:</b><br>"
             "• <b>Anthropic:</b> <a href='https://console.anthropic.com/'>console.anthropic.com</a><br>"
             "• <b>OpenAI:</b> <a href='https://platform.openai.com/api-keys'>platform.openai.com/api-keys</a><br>"
-            "• <b>Telegram Bot:</b> команда <code>/api</code> в боте (только для админа)"
+            "• <b>AI Server:</b> Обратитесь к администратору сервера"
         )
         help_label.setOpenExternalLinks(True)
         help_label.setWordWrap(True)

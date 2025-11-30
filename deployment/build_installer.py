@@ -53,7 +53,8 @@ FILES_TO_COPY = [
     "README.md",
     "BUILD.md",
     "SETUP.md",
-    "update_config.py"
+    "update_config.py",
+    "run_app.bat"
 ]
 
 # Директории для копирования
