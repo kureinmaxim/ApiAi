@@ -51,9 +51,12 @@ To configure API keys:
 
 ## Documentation
 
-- [Setup Guide](../SETUP.md) - Detailed installation instructions
-- [Build Guide](../BUILD.md) - Creating installers and releases
-- [Logs Guide](../LOGS_GUIDE.md) - Understanding application logs
+- [Setup Guide](SETUP.md) - Detailed installation instructions
+- [Build Guide](BUILD.md) - Creating installers and releases
+- [Logs Guide](LOGS_GUIDE.md) - Understanding application logs
+- [AI Integration Guide](docs/AI_INTEGRATION_GUIDE.md)
+- [API Management](docs/API_MANAGEMENT.md)
+- [Offline Installation](docs/OFFLINE_INSTALLATION_GUIDE.md)
 
 ## Support
 

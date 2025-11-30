@@ -9,13 +9,12 @@
 При клонировании репозитория с GitHub вы получаете:
 
 ✅ **Есть в репозитории:**
-- Исходный код Python (в папке `python/`)
-- Экспериментальный код Rust (в папке `rust/`)
-- Template файл конфигурации: `python/config/config_qt.json.template`
-- Шрифты DejaVu Sans в `python/fonts/`
-- Документация в `docs/` и корне проекта
-- Скрипты в `python/scripts/`
-- Скрипты сборки инсталляторов в `python/deployment/`
+- Исходный код (Python модули)
+- Template файл конфигурации: `config/config_qt.json.template`
+- Шрифты DejaVu Sans в `fonts/`
+- Документация в `docs/`
+- Скрипты в `scripts/`
+- Скрипты сборки инсталляторов в `deployment/`
 
 ❌ **НЕТ в репозитории** (они в `.gitignore`):
 - `config_qt.json` - локальный конфиг с вашими API ключами и настройками
@@ -54,7 +53,7 @@
 
 ```bash
 git clone <repo-url> ApiAi
-cd ApiAi/python
+cd ApiAi
 ```
 
 ### Шаг 2: Создайте виртуальное окружение
@@ -110,13 +109,11 @@ python main.py
 
 **Windows PowerShell:**
 ```powershell
-cd python
 Copy-Item config/config_qt.json.template config_qt.json
 ```
 
 **macOS/Linux (bash):**
 ```bash
-cd python
 cp config/config_qt.json.template config_qt.json
 ```
 
@@ -168,7 +165,6 @@ cp config/config_qt.json.template config_qt.json
 После обновления проекта (`git pull`) синхронизируйте версии:
 
 ```bash
-cd python
 python scripts/update_version.py sync
 ```
 
@@ -230,7 +226,6 @@ ls -la config_qt.json
 ### 2. Проверьте версию:
 
 ```bash
-cd python
 python scripts/update_version.py status
 ```
 

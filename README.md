@@ -25,46 +25,17 @@ ApiAi/
 └── README.md        # This file
 ```
 
-## Features
-- 🤖 Multiple AI providers (Anthropic Claude, OpenAI GPT, Telegram Bot)
-- 🔒 Secure API key storage with encryption support
-- 🎨 Modern dark/light themes
-- 🔐 PIN protection for expert mode
-- 📱 Cross-platform (Windows, macOS, Linux)
+## Documentation
 
-## Installation
+### General
+- [Encryption Protocol](docs/ENCRYPTION.md)
+- [Network Ports](docs/PORTS.md)
 
-### Prerequisites
-- Python 3.8+
-- pip
+### Versions
+- [**Python Version Documentation**](python/README.md)
+- [**Rust Version Documentation**](rust/README.md)
 
-### Setup
-
-#### 1. Create Virtual Environment
-
-**Windows:**
-```bash
-# Clone or download the repository
-cd ApiAi/python
-
-# Create virtual environment
-python -m venv .venv
-
-# Activate virtual environment
-.venv\Scripts\activate
-```
-
-**macOS/Linux:**
-```bash
-# Clone or download the repository
-cd ApiAi/python
-
-# Create virtual environment
-python3 -m venv venv
-
-# Activate virtual environment
-source venv/bin/activate
-```
+See `python/` directory for detailed setup, build, and logs guides.
 
 #### 2. Install Dependencies
 

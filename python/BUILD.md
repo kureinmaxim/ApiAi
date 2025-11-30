@@ -12,8 +12,8 @@
 Единственный источник правды — это `config/config_qt.json.template`.
 
 ### 📂 Где хранится версия?
-- **Template:** `python/config/config_qt.json.template`
-- **Локальный:** `python/config_qt.json` (не в Git)
+- **Template:** `config/config_qt.json.template`
+- **Локальный:** `config_qt.json` (не в Git)
 
 > ⚠️ **Важно:** Никогда не меняйте версию вручную. Используйте `scripts/update_version.py`.
 
@@ -22,29 +22,29 @@
 #### Шаг 1: Проверка текущего статуса
 
 ```bash
-python python/scripts/update_version.py status
+python scripts/update_version.py status
 ```
 
 #### Шаг 2: Обновление версии
 
 ```bash
 # Patch (1.0.0 → 1.0.1)
-python python/scripts/update_version.py bump --type patch
+python scripts/update_version.py bump --type patch
 
 # Minor (1.0.0 → 1.1.0)
-python python/scripts/update_version.py bump --type minor
+python scripts/update_version.py bump --type minor
 
 # Major (1.0.0 → 2.0.0)
-python python/scripts/update_version.py bump --type major
+python scripts/update_version.py bump --type major
 
 # Или установить конкретную версию
-python python/scripts/update_version.py set 1.2.0
+python scripts/update_version.py set 1.2.0
 ```
 
 #### Шаг 3: Синхронизация
 
 ```bash
-python python/scripts/update_version.py sync
+python scripts/update_version.py sync
 ```
 
 **Что делает sync:**
@@ -65,7 +65,7 @@ python python/scripts/update_version.py sync
 
 **Запуск:**
 ```powershell
-python python/deployment/build_installer.py
+python deployment/build_installer.py
 ```
 
 **Процесс:**
@@ -97,7 +97,7 @@ python python/deployment/build_installer.py
 
 **Запуск:**
 ```bash
-./python/deployment/build_macos.sh
+./deployment/build_macos.sh
 ```
 
 **Процесс:**

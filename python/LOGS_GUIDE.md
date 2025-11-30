@@ -27,7 +27,7 @@ ApiAi выводит логи прямо в интерфейсе:
 
 ```cmd
 # Windows - из папки проекта
-cd c:\Project\ApiAi
+cd c:\Project\ApiAi\python
 python main.py
 
 # Или если установлен
@@ -88,7 +88,7 @@ tail -f ~/.local/share/ApiAi/logs/app.log
 ### Где хранится конфиг
 
 ```
-Из проекта:      c:\Project\ApiAi\config_qt.json
+Из проекта:      c:\Project\ApiAi\python\config_qt.json
 После установки: %LOCALAPPDATA%\ApiAi\config_qt.json
                  C:\Users\{USER}\AppData\Local\ApiAi\config_qt.json
 ```
@@ -96,7 +96,7 @@ tail -f ~/.local/share/ApiAi/logs/app.log
 ### Где виртуальное окружение
 
 ```
-Из проекта:      c:\Project\ApiAi\.venv\
+Из проекта:      c:\Project\ApiAi\python\.venv\
 После установки: %LOCALAPPDATA%\ApiAi\.venv\
                  C:\Users\{USER}\AppData\Local\ApiAi\.venv\
 ```
@@ -107,7 +107,7 @@ tail -f ~/.local/share/ApiAi/logs/app.log
 
 ```cmd
 # Windows
-type c:\Project\ApiAi\config_qt.json
+type c:\Project\ApiAi\python\config_qt.json
 
 # Или после установки
 type %LOCALAPPDATA%\ApiAi\config_qt.json
