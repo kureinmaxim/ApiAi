@@ -1,5 +1,8 @@
 # ApiAi - Rust Implementation
 
+> [!WARNING]
+> **Experimental Version** - This is a work-in-progress rewrite of ApiAi in Rust. For production use, see the [Python version](../python/).
+
 Экспериментальная версия ApiAi на языке Rust.
 
 ## Сборка и запуск

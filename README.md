@@ -2,6 +2,29 @@
 
 AI-powered component search application with support for multiple AI providers.
 
+## 📁 Project Structure
+
+This repository contains **two versions** of ApiAi:
+
+- **`python/`** - **Stable Python version** (v1.0.3) - Production-ready, fully functional
+- **`rust/`** - **Experimental Rust version** - Work in progress, for testing and migration
+
+> [!NOTE]
+> If you're a user, use the **Python version**. The Rust version is for developers experimenting with a Rust rewrite.
+
+```
+ApiAi/
+├── python/          # 🐍 Python version (stable)
+│   ├── main.py      # Entry point
+│   ├── gui/         # GUI modules
+│   └── config/      # Configuration
+├── rust/            # 🦀 Rust version (experimental)
+│   ├── Cargo.toml
+│   └── src/
+├── docs/            # Documentation
+└── README.md        # This file
+```
+
 ## Features
 - 🤖 Multiple AI providers (Anthropic Claude, OpenAI GPT, Telegram Bot)
 - 🔒 Secure API key storage with encryption support
@@ -22,7 +45,7 @@ AI-powered component search application with support for multiple AI providers.
 **Windows:**
 ```bash
 # Clone or download the repository
-cd ApiAi
+cd ApiAi/python
 
 # Create virtual environment
 python -m venv .venv
@@ -34,7 +57,7 @@ python -m venv .venv
 **macOS/Linux:**
 ```bash
 # Clone or download the repository
-cd ApiAi
+cd ApiAi/python
 
 # Create virtual environment
 python3 -m venv venv
