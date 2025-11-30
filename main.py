@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+"""
+Точка входа для ApiAi
+"""
+
+if __name__ == "__main__":
+    # Настройка кодировки консоли для Windows
+    import sys
+    import io
+    if sys.platform == 'win32':
+        try:
+            if hasattr(sys.stdout, 'buffer'):
+                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+            if hasattr(sys.stderr, 'buffer'):
+                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+        except Exception:
+            pass
+    
+    from gui.main_window import main
+    main()
