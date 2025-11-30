@@ -54,3 +54,7 @@ ApiAi-Setup-*.exe
 temp_installer/
 installer_active.iss
 run_app.bat
+
+# Rust
+rust/target/
+rust/Cargo.lock
