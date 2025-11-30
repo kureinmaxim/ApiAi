@@ -41,3 +41,7 @@ config_qt.json
 
 # Logs
 *.log
+
+# Offline packages (too large for git)
+offline_packages/*.whl
+offline_packages/*.tar.gz
