@@ -16,16 +16,71 @@ AI-powered component search application with support for multiple AI providers.
 - pip
 
 ### Setup
+
+#### 1. Create Virtual Environment
+
+**Windows:**
 ```bash
 # Clone or download the repository
 cd ApiAi
 
-# Install dependencies
-pip install -r requirements.txt
+# Create virtual environment
+python -m venv .venv
 
-# Run the application
+# Activate virtual environment
+.venv\Scripts\activate
+```
+
+**macOS/Linux:**
+```bash
+# Clone or download the repository
+cd ApiAi
+
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate
+```
+
+#### 2. Install Dependencies
+
+**Windows:**
+```bash
+# Install dependencies
+python -m pip install -r requirements.txt
+```
+
+**macOS/Linux:**
+```bash
+# Install dependencies
+python3 -m pip install -r requirements.txt
+```
+
+> **Note:** Using `python -m pip` (or `python3 -m pip`) is more reliable than just `pip`, especially in virtual environments.
+
+**Required dependencies:**
+- PySide6 (GUI)
+- requests (HTTP)
+- cryptography (encryption)
+
+**Optional dependencies (for Word/PDF export):**
+- python-docx
+- reportlab
+
+#### 3. Run the Application
+
+**Windows:**
+```bash
 python main.py
 ```
+
+**macOS/Linux:**
+```bash
+python3 main.py
+```
+
+> **Note:** Always activate the virtual environment before running the application. On Windows, use `.venv\Scripts\activate`, on macOS/Linux use `source venv/bin/activate`.
 
 ## Configuration
 On first run, the application creates `config_qt.json` automatically. 

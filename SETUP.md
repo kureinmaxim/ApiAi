@@ -70,9 +70,17 @@ source .venv/bin/activate
 
 ### Шаг 3: Установите зависимости
 
-```bash
-pip install -r requirements.txt
+**Windows:**
+```powershell
+python -m pip install -r requirements.txt
 ```
+
+**macOS/Linux:**
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+> **Примечание:** Использование `python -m pip` (или `python3 -m pip`) более надежно, чем просто `pip`, особенно в виртуальных окружениях.
 
 **Минимальные зависимости (всегда):**
 - PySide6 (GUI)
@@ -248,8 +256,15 @@ python main.py
 ### Q: Нужно ли устанавливать reportlab и python-docx?
 
 **A:** Опционально. Они нужны только для экспорта результатов в PDF/Word. Если планируете использовать эти форматы:
+
+**Windows:**
+```powershell
+python -m pip install reportlab python-docx
+```
+
+**macOS/Linux:**
 ```bash
-pip install reportlab python-docx
+python3 -m pip install reportlab python-docx
 ```
 
 ---
