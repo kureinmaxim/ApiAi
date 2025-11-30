@@ -5,19 +5,41 @@
 
 Экспериментальная версия ApiAi на языке Rust.
 
-## Сборка и запуск
+## 🚀 Запуск
+
+Для запуска экспериментальной Rust версии:
+
+```bash
+cd rust
+cargo run
+```
+
+## 📦 Управление версиями
+
+Версия проекта синхронизируется с Python-версией через общий скрипт.
+
+**Обновить версию (Patch / Minor / Major):**
+
+```bash
+# Из корня проекта или из папки python/
+python python/scripts/update_version.py bump --type patch
+```
+
+Это автоматически обновит:
+1. `python/config/config_qt.json.template`
+2. `rust/Cargo.toml`
+3. `rust/src/main.rs`
+
+## 🛠 Сборка
 
 ```bash
 # Проверка кода
 cargo check
 
-# Компиляция
+# Компиляция (Debug)
 cargo build
 
-# Запуск
-cargo run
-
-# Релизная сборка
+# Релизная сборка (Optimized)
 cargo build --release
 ```
 
@@ -35,8 +57,8 @@ rust/
 ## Статус миграции
 
 - [ ] Config Manager
-- [ ] Encryption Module
-- [ ] API Client
-- [ ] GUI Layer
-- [ ] Settings Dialog
+- [x] Encryption Module (Basic)
+- [x] API Client
+- [x] GUI Layer
+- [x] Settings Dialog
 - [ ] Main Window

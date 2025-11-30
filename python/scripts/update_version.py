@@ -13,91 +13,60 @@ from datetime import datetime
 from pathlib import Path
 
 
-def get_project_root():
-    """Получает корень проекта"""
-    return Path(__file__).parent.parent
+def get_repo_root():
+    """Получает корень всего репозитория (над python/)"""
+    return get_project_root().parent
 
 
-def get_template_path():
-    """Путь к шаблону конфига"""
-    return get_project_root() / "config" / "config_qt.json.template"
-
-
-def get_local_config_path():
-    """Путь к локальному конфигу"""
-    return get_project_root() / "config_qt.json"
-
-
-def load_template():
-    """Загружает шаблон"""
-    template_path = get_template_path()
-    if not template_path.exists():
-        print(f"❌ Шаблон не найден: {template_path}")
-        sys.exit(1)
+def update_rust_files(new_version, dry_run=False):
+    """Обновляет версию в файлах Rust"""
+    repo_root = get_repo_root()
+    cargo_toml = repo_root / "rust" / "Cargo.toml"
+    main_rs = repo_root / "rust" / "src" / "main.rs"
     
-    with open(template_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    if not cargo_toml.exists():
+        print(f"⚠️ Rust проект не найден: {cargo_toml}")
+        return
 
-
-def save_template(data):
-    """Сохраняет шаблон"""
-    template_path = get_template_path()
-    with open(template_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-    print(f"✅ Шаблон обновлен: {template_path}")
-
-
-def parse_version(version_str):
-    """Парсит версию в компоненты"""
+    # 1. Update Cargo.toml
     try:
-        parts = version_str.split('.')
-        return {
-            'major': int(parts[0]),
-            'minor': int(parts[1]) if len(parts) > 1 else 0,
-            'patch': int(parts[2]) if len(parts) > 2 else 0
-        }
-    except (ValueError, IndexError):
-        print(f"❌ Неверный формат версии: {version_str}")
-        sys.exit(1)
+        with open(cargo_toml, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Simple regex-like replacement for version = "..."
+        import re
+        new_content = re.sub(r'version = "\d+\.\d+\.\d+"', f'version = "{new_version}"', content, count=1)
+        
+        if content != new_content:
+            if not dry_run:
+                with open(cargo_toml, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print(f"✅ Обновлен Cargo.toml: {new_version}")
+            else:
+                print(f"🔍 [Dry Run] Обновлен бы Cargo.toml: {new_version}")
+    except Exception as e:
+        print(f"❌ Ошибка обновления Cargo.toml: {e}")
 
-
-def version_to_string(v):
-    """Преобразует словарь версии в строку"""
-    return f"{v['major']}.{v['minor']}.{v['patch']}"
-
-
-def bump_version(current_version, bump_type):
-    """Увеличивает версию"""
-    v = parse_version(current_version)
-    
-    if bump_type == 'major':
-        v['major'] += 1
-        v['minor'] = 0
-        v['patch'] = 0
-    elif bump_type == 'minor':
-        v['minor'] += 1
-        v['patch'] = 0
-    elif bump_type == 'patch':
-        v['patch'] += 1
-    else:
-        print(f"❌ Неизвестный тип обновления: {bump_type}")
-        sys.exit(1)
-    
-    return version_to_string(v)
-
-
-def get_current_date():
-    """Получает текущую дату в формате DD.MM.YYYY"""
-    return datetime.now().strftime("%d.%m.%Y")
-
-
-def get_current_date_iso():
-    """Получает текущую дату в формате ISO"""
-    return datetime.now().strftime("%Y-%m-%d")
+    # 2. Update main.rs (default config)
+    try:
+        with open(main_rs, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        new_content = re.sub(r'version: "\d+\.\d+\.\d+".to_string\(\)', f'version: "{new_version}".to_string()', content)
+        
+        if content != new_content:
+            if not dry_run:
+                with open(main_rs, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print(f"✅ Обновлен main.rs: {new_version}")
+            else:
+                print(f"🔍 [Dry Run] Обновлен бы main.rs: {new_version}")
+    except Exception as e:
+        print(f"❌ Ошибка обновления main.rs: {e}")
 
 
 def update_version(bump_type=None, version=None, release_date=None, developer=None, dry_run=False, no_release_date=False):
-    """Обновляет версию в шаблоне"""
+    """Обновляет версию в шаблоне и Rust файлах"""
     
     # Загружаем шаблон
     template = load_template()
@@ -142,10 +111,14 @@ def update_version(bump_type=None, version=None, release_date=None, developer=No
     
     if dry_run:
         print("🔍 Режим тестирования - изменения не сохранены")
+        update_rust_files(new_version, dry_run=True)
         return
     
-    # Сохраняем
+    # Сохраняем шаблон
     save_template(template)
+    
+    # Обновляем Rust файлы
+    update_rust_files(new_version, dry_run=False)
     
     print("\n💡 Следующие шаги:")
     print("   1. Синхронизируйте: python scripts/update_version.py sync")
