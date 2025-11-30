@@ -1,0 +1,42 @@
+{
+  "app_info": {
+    "name": "ApiAi",
+    "version": "1.0.0",
+    "edition": "Standard",
+    "description": "ApiAi Application",
+    "release_date": "30.11.2025",
+    "last_updated": "2025-11-30",
+    "developer_en": "Kurein M.N."
+  },
+  "security": {
+    "pin_code": "1234",
+    "require_pin": true
+  },
+  "window": {
+    "width": 900,
+    "height": 700,
+    "scale_factor": 1.0,
+    "remember_size": true
+  },
+  "ui": {
+    "theme": "dark",
+    "font_size": 12,
+    "scale_factor": 1.0,
+    "view_mode": "expert",
+    "log_timestamps": false,
+    "auto_open_output": false,
+    "auto_export_pdf": false,
+    "ai_classifier_enabled": true,
+    "ai_auto_classify": false
+  },
+  "api_keys": {
+    "anthropic": "",
+    "openai": "",
+    "ollama_url": "http://localhost:11434",
+    "telegram_url": "http://localhost:8000/ai_query",
+    "telegram_key": "",
+    "telegram_enc_key": "",
+    "telegram_use_encryption": true,
+    "app_id": "apiai-v1"
+  }
+}
