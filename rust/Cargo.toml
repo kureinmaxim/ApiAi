@@ -4,25 +4,33 @@ version = "1.0.0"
 edition = "2021"
 
 [dependencies]
-# Для GUI (аналог PyQt/PySide)
+# GUI framework
 eframe = "0.29"
 egui = "0.29"
+egui_extras = "0.29"
 
-# Для HTTP запросов (аналог requests)
-reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+# Async runtime
+tokio = { version = "1.0", features = ["full"] }
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 async-trait = "0.1"
-tokio = { version = "1", features = ["full"] }
 
-# Для JSON (аналог json в Python)
+# Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# Для конфигурации
-config = "0.14"
+# Configuration
+config = "0.13"
+dirs = "5.0"
 
-# Для логирования
+# Logging
 tracing = "0.1"
 tracing-subscriber = "0.3"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
 
 [dev-dependencies]
 mockito = "1.5"

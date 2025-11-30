@@ -2,21 +2,25 @@ use serde::{Deserialize, Serialize};
 use std::error::Error;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct SearchResult {
     pub text: String,
     pub provider: String,
 }
 
 #[async_trait::async_trait]
+#[allow(dead_code)]
 pub trait ApiClient: Send + Sync {
     async fn search(&self, query: &str) -> Result<SearchResult, Box<dyn Error + Send + Sync>>;
 }
 
+#[allow(dead_code)]
 pub struct AnthropicClient {
     api_key: String,
     _client: reqwest::Client,
 }
 
+#[allow(dead_code)]
 impl AnthropicClient {
     pub fn new(api_key: String) -> Self {
         Self {
@@ -46,11 +50,13 @@ impl ApiClient for AnthropicClient {
     }
 }
 
+#[allow(dead_code)]
 pub struct OpenAIClient {
     api_key: String,
     _client: reqwest::Client,
 }
 
+#[allow(dead_code)]
 impl OpenAIClient {
     pub fn new(api_key: String) -> Self {
         Self {
@@ -77,12 +83,14 @@ impl ApiClient for OpenAIClient {
     }
 }
 
+#[allow(dead_code)]
 pub struct TelegramClient {
     url: String,
     _api_key: String,
     _client: reqwest::Client,
 }
 
+#[allow(dead_code)]
 impl TelegramClient {
     pub fn new(url: String, api_key: String) -> Self {
         Self {
