@@ -378,17 +378,161 @@ class SearchWidget(QWidget):
             QMessageBox.warning(self, "Пусто", "Нет результатов для сохранения")
             return
             
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, "Сохранить результаты", "", "Text Files (*.txt);;HTML Files (*.html)"
+        filters = (
+            "HTML Files (*.html);;"
+            "Text Files (*.txt);;"
+            "Word Document (*.docx);;"
+            "PDF (*.pdf)"
         )
         
-        if file_path:
-            try:
+        file_path, selected_filter = QFileDialog.getSaveFileName(
+            self, "Сохранить результаты", "", filters
+        )
+        
+        if not file_path:
+            return
+            
+        try:
+            if file_path.endswith('.html'):
                 with open(file_path, 'w', encoding='utf-8') as f:
-                    if file_path.endswith('.html'):
-                        f.write(self.results_browser.toHtml())
-                    else:
-                        f.write(content)
-                QMessageBox.information(self, "Успех", f"Файл сохранен:\n{file_path}")
-            except Exception as e:
-                QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить файл:\n{e}")
+                    f.write(self.results_browser.toHtml())
+                    
+            elif file_path.endswith('.txt'):
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                    
+            elif file_path.endswith('.docx'):
+                self._save_as_docx(file_path, content)
+                
+            elif file_path.endswith('.pdf'):
+                self._save_as_pdf(file_path, content)
+            else:
+                # Default to txt
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                    
+            QMessageBox.information(self, "Успех", f"Файл сохранен:\n{file_path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить файл:\n{e}")
+    
+    def _save_as_docx(self, file_path, content):
+        """Сохраняет в Word документ"""
+        try:
+            from docx import Document
+            from docx.shared import Pt
+            
+            doc = Document()
+            
+            # Заголовок
+            heading = doc.add_heading('Результаты поиска ApiAi', 0)
+            heading.style.font.name = 'Arial'
+            
+            # Контент
+            for paragraph in content.split('\n\n'):
+                if paragraph.strip():
+                    p = doc.add_paragraph(paragraph.strip())
+                    p.style.font.name = 'Arial'
+                    p.style.font.size = Pt(11)
+            
+            doc.save(file_path)
+            
+        except ImportError:
+            QMessageBox.warning(
+                self, 
+                "Модуль не найден",
+                "Для сохранения в Word установите: pip install python-docx"
+            )
+    
+    def _save_as_pdf(self, file_path, content):
+        """Сохраняет в PDF с поддержкой кириллицы"""
+        try:
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib.styles import ParagraphStyle
+            from reportlab.lib.units import mm
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            from reportlab.pdfbase import pdfmetrics
+            from reportlab.pdfbase.ttfonts import TTFont
+            import os
+            
+            # Регистрация шрифта DejaVu Sans (с поддержкой кириллицы)
+            font_registered = False
+            font_name = 'DejaVuSans'
+            
+            # Пытаемся найти и зарегистрировать шрифт
+            font_paths = [
+                os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fonts', 'DejaVuSans.ttf'),
+                '/System/Library/Fonts/Supplemental/Arial.ttf',  # macOS
+                'C:\\Windows\\Fonts\\arial.ttf',  # Windows
+                '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',  # Linux
+            ]
+            
+            for font_path in font_paths:
+                if os.path.exists(font_path):
+                    try:
+                        pdfmetrics.registerFont(TTFont(font_name, font_path))
+                        font_registered = True
+                        break
+                    except Exception:
+                        continue
+            
+            if not font_registered:
+                # Fallback на Helvetica (без кириллицы)
+                font_name = 'Helvetica'
+                QMessageBox.warning(
+                    self,
+                    "Шрифт не найден",
+                    "Не найден шрифт с поддержкой кириллицы. PDF может отображаться некорректно."
+                )
+            
+            # Создание документа
+            doc = SimpleDocTemplate(
+                file_path,
+                pagesize=A4,
+                leftMargin=15*mm,
+                rightMargin=15*mm,
+                topMargin=15*mm,
+                bottomMargin=15*mm
+            )
+            
+            # Стили
+            title_style = ParagraphStyle(
+                'Title',
+                fontName=font_name,
+                fontSize=14,
+                leading=16,
+                spaceAfter=10
+            )
+            
+            body_style = ParagraphStyle(
+                'Body',
+                fontName=font_name,
+                fontSize=10,
+                leading=12,
+                spaceAfter=6
+            )
+            
+            # Сборка контента
+            story = []
+            
+            # Заголовок
+            story.append(Paragraph("Результаты поиска ApiAi", title_style))
+            story.append(Spacer(1, 10*mm))
+            
+            # Текст результатов
+            for paragraph in content.split('\n\n'):
+                if paragraph.strip():
+                    # Экранируем HTML-спецсимволы
+                    safe_text = paragraph.strip().replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                    story.append(Paragraph(safe_text, body_style))
+                    story.append(Spacer(1, 3*mm))
+            
+            # Генерация PDF
+            doc.build(story)
+            
+        except ImportError:
+            QMessageBox.warning(
+                self,
+                "Модуль не найден",
+                "Для сохранения в PDF установите: pip install reportlab"
+            )
+
