@@ -12,5 +12,5 @@ python-docx>=1.1.0
 reportlab>=4.0.0
 
 # Build tools (optional - only for building installers)
-# py2app>=0.28.0        # macOS .app bundle creation
-# setuptools>=68.0.0    # Required for py2app
+ py2app>=0.28.0        # macOS .app bundle creation
+ setuptools>=68.0.0    # Required for py2app
