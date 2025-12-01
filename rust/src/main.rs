@@ -76,7 +76,7 @@ const _COMPONENT_ANALYSIS_TEMPLATE: &str = r#"Роль: Инженер-разр�
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([600.0, 500.0])
+            .with_inner_size([600.0, 700.0])
             .with_min_inner_size([500.0, 400.0]),
         ..Default::default()
     };
@@ -440,6 +440,10 @@ impl ApiAiApp {
             v.widgets.inactive.bg_fill = egui::Color32::WHITE;
             v.widgets.inactive.fg_stroke = egui::Stroke::new(1.0, text);
             
+            // Hovered state - lighter blue for selectable buttons
+            v.widgets.hovered.bg_fill = blue.linear_multiply(0.7); // Lighter blue for hover
+            v.widgets.hovered.fg_stroke = egui::Stroke::new(1.0, egui::Color32::WHITE);
+            
             v.widgets.active.bg_fill = blue;
             v.widgets.active.fg_stroke = egui::Stroke::new(2.0, egui::Color32::WHITE);
             
@@ -799,37 +803,56 @@ impl eframe::App for ApiAiApp {
                     ui.label(egui::RichText::new(input_label).size(12.0).color(label_color));
                     ui.add_space(3.0);
 
-                    // Search input
-                    egui::ScrollArea::vertical()
-                        .max_height(120.0)
-                        .show(ui, |ui| {
-                            let response = ui.add(
-                                egui::TextEdit::multiline(&mut self.search_query)
-                                    .hint_text(if self.prompt_mode == PromptMode::GeneralChat { "Ask anything..." } else { "Component part number..." })
-                                    .desired_width(panel_width)
-                                    .desired_rows(6)
-                                    .font(egui::TextStyle::Body)
-                            );
-                            
-                            // Ctrl+Enter to search
-                            if response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter) && i.modifiers.command) {
-                                self.perform_search();
-                            }
-                        });
+                    // Search input - fixed width and height without scrollbar when empty
+                    let response = ui.add(
+                        egui::TextEdit::multiline(&mut self.search_query)
+                            .hint_text(if self.prompt_mode == PromptMode::GeneralChat { "Ask anything..." } else { "Component part number..." })
+                            .desired_width(panel_width)
+                            .desired_rows(6)
+                            .font(egui::TextStyle::Body)
+                    );
                     
-                    ui.add_space(8.0);
-                    
-                    // Send Button
-                    let btn_text = match self.prompt_mode {
-                        PromptMode::GeneralChat => "   🚀 Send Request   ",
-                        PromptMode::ComponentAnalysis => "   🔍 Analyze Component   ",
-                    };
-                    
-                    if ui.add_sized([panel_width, 35.0], egui::Button::new(btn_text)).clicked() {
+                    // Ctrl+Enter to search
+                    if response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter) && i.modifiers.command) {
                         self.perform_search();
                     }
                     
-                    ui.add_space(10.0);
+                    ui.add_space(8.0);
+                    
+                    // Send Button - Compact and Centered
+                    let btn_text = match self.prompt_mode {
+                        PromptMode::GeneralChat => "🚀 Send Request",
+                        PromptMode::ComponentAnalysis => "🔍 Analyze Component",
+                    };
+                    
+                    ui.horizontal(|ui| {
+                        // Center the button
+                        let button_width = 200.0;
+                        let available_width = panel_width;
+                        let left_padding = (available_width - button_width) / 2.0;
+                        ui.add_space(left_padding);
+                        
+                        // Create button with same color as active provider background in each theme
+                        let button_color = if self.dark_mode {
+                            egui::Color32::from_rgb(90, 143, 234)   // Dark: #5a8fea
+                        } else {
+                            // Use the exact same color as active provider background
+                            // Match the visual appearance of active selectable_value (light blue)
+                            // The active provider appears as light blue (#A0D9F5 or similar)
+                            // Use the hovered color which matches the visual appearance
+                            ctx.style().visuals.widgets.hovered.bg_fill
+                        };
+                        
+                        let send_button = egui::Button::new(egui::RichText::new(btn_text).size(14.0))
+                            .fill(button_color)
+                            .min_size(egui::vec2(button_width, 36.0));
+                        
+                        if ui.add(send_button).clicked() {
+                            self.perform_search();
+                        }
+                    });
+                    
+                    ui.add_space(5.0);
                 });
             });
         });
@@ -839,7 +862,7 @@ impl eframe::App for ApiAiApp {
             ui.horizontal(|ui| {
                 ui.add_space(20.0);
                 ui.vertical(|ui| {
-                    ui.add_space(10.0);
+                    ui.add_space(5.0);
                     ui.horizontal(|ui| {
                         ui.label(egui::RichText::new("Export:").strong().color(label_color));
                         
@@ -852,30 +875,36 @@ impl eframe::App for ApiAiApp {
                             if ui.button("🌐 HTML").clicked() { /* TODO */ }
                         });
                     });
-                    ui.add_space(10.0);
+                    ui.add_space(5.0);
                 });
             });
         });
 
         // 4. Response Area (Central) - Fills remaining space
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.add_space(20.0);
+            // Remove all padding to maximize space
+            let mut frame = egui::Frame::central_panel(ui.style());
+            frame.inner_margin = egui::Margin::symmetric(20.0, 0.0);
+            
+            frame.show(ui, |ui| {
                 ui.vertical(|ui| {
+                    // Use the same width as input panel
                     let panel_width = ui.available_width() - 20.0;
                     
                     ui.label(egui::RichText::new("Response:").size(12.0).strong().color(label_color));
                     ui.add_space(3.0);
                     
-                    egui::ScrollArea::vertical()
-                        .show(ui, |ui| {
-                            ui.add_sized(
-                                ui.available_size(),
-                                egui::TextEdit::multiline(&mut self.response_text)
-                                    .desired_width(panel_width)
-                                    .font(egui::TextStyle::Body)
-                            );
-                        });
+                    // Calculate exact rows to fill remaining space
+                    let available_height = ui.available_height();
+                    let line_height = ui.text_style_height(&egui::TextStyle::Body);
+                    let rows = ((available_height - 10.0) / line_height).floor() as usize;
+                    
+                    ui.add(
+                        egui::TextEdit::multiline(&mut self.response_text)
+                            .desired_width(panel_width)
+                            .desired_rows(rows.max(15))
+                            .font(egui::TextStyle::Body)
+                    );
                 });
             });
         });
