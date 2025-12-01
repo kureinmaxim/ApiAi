@@ -30,7 +30,8 @@ class SettingsDialog(QDialog):
         self.parent_window = parent
         
         self.setWindowTitle("⚙️ Настройки API")
-        self.setModal(True)
+        # Make it a standalone window that can be moved anywhere
+        self.setWindowFlags(Qt.Window | Qt.WindowCloseButtonHint | Qt.WindowMinMaxButtonsHint)
         self.resize(600, 450)
         
         self._create_ui()

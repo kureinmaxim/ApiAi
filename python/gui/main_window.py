@@ -137,7 +137,7 @@ class ApiAiMainWindow(QMainWindow):
              QMessageBox.information(self, "Доступ запрещен", "Для доступа к настройкам разблокируйте режим эксперта (двойной клик по разработчику внизу).")
              return
 
-        dialog = SettingsDialog(self, self.cfg)
+        dialog = SettingsDialog(None, self.cfg)
         if dialog.exec():
             self.cfg = dialog.get_config()
             self.config_manager.config = self.cfg

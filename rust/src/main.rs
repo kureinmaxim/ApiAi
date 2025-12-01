@@ -189,7 +189,7 @@ impl Default for AppConfig {
         Self {
             app_info: AppInfo {
                 name: "ApiAi".to_string(),
-                version: "1.0.5".to_string(),
+                version: "1.0.6".to_string(),
                 developer_en: "Maksim Kurein".to_string(),
             },
             api_keys: ApiKeys {
@@ -609,8 +609,8 @@ impl eframe::App for ApiAiApp {
             
             egui::Window::new("⚙️ Settings - API Keys")
                 .collapsible(false)
-                .resizable(true)
-                .default_width(600.0)
+                .resizable(false)
+                .auto_sized()
                 .show(ctx, |ui| {
                     egui::ScrollArea::vertical().show(ui, |ui| {
                         ui.heading("Cloud Services API Keys");
@@ -771,10 +771,9 @@ impl eframe::App for ApiAiApp {
 
         // 2. Input Panel (Top)
         egui::TopBottomPanel::top("input_panel").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.add_space(20.0);
-                ui.vertical(|ui| {
-                    let panel_width = ui.available_width() - 20.0;
+            ui.add_space(20.0);
+            ui.vertical(|ui| {
+                let panel_width = ui.available_width();
                     
                     // Mode Selection
                     ui.horizontal(|ui| {
@@ -854,7 +853,7 @@ impl eframe::App for ApiAiApp {
                     
                     ui.add_space(5.0);
                 });
-            });
+            ui.add_space(20.0);
         });
 
         // 3. Export Panel (Bottom) - Docked above the footer
@@ -882,31 +881,27 @@ impl eframe::App for ApiAiApp {
 
         // 4. Response Area (Central) - Fills remaining space
         egui::CentralPanel::default().show(ctx, |ui| {
-            // Remove all padding to maximize space
-            let mut frame = egui::Frame::central_panel(ui.style());
-            frame.inner_margin = egui::Margin::symmetric(20.0, 0.0);
-            
-            frame.show(ui, |ui| {
-                ui.vertical(|ui| {
-                    // Use the same width as input panel
-                    let panel_width = ui.available_width() - 20.0;
-                    
-                    ui.label(egui::RichText::new("Response:").size(12.0).strong().color(label_color));
-                    ui.add_space(3.0);
-                    
-                    // Calculate exact rows to fill remaining space
-                    let available_height = ui.available_height();
-                    let line_height = ui.text_style_height(&egui::TextStyle::Body);
-                    let rows = ((available_height - 10.0) / line_height).floor() as usize;
-                    
-                    ui.add(
-                        egui::TextEdit::multiline(&mut self.response_text)
-                            .desired_width(panel_width)
-                            .desired_rows(rows.max(15))
-                            .font(egui::TextStyle::Body)
-                    );
-                });
+            ui.add_space(20.0);
+            ui.vertical(|ui| {
+                // Use the same width as input panel
+                let panel_width = ui.available_width();
+                
+                ui.label(egui::RichText::new("Response:").size(12.0).strong().color(label_color));
+                ui.add_space(3.0);
+                
+                // Calculate exact rows to fill remaining space
+                let available_height = ui.available_height();
+                let line_height = ui.text_style_height(&egui::TextStyle::Body);
+                let rows = ((available_height - 10.0) / line_height).floor() as usize;
+                
+                ui.add(
+                    egui::TextEdit::multiline(&mut self.response_text)
+                        .desired_width(panel_width)
+                        .desired_rows(rows.max(15))
+                        .font(egui::TextStyle::Body)
+                );
             });
+            ui.add_space(20.0);
         });
         
         // Keyboard shortcuts

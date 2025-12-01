@@ -1,7 +1,7 @@
 {
   "app_info": {
     "name": "ApiAi",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "edition": "Standard",
     "description": "ApiAi Application",
     "release_date": "01.12.2025",
