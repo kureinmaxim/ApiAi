@@ -47,6 +47,7 @@ offline_package/*.whl
 offline_package/*.tar.gz
 offline_packages/*.whl
 offline_packages/*.tar.gz
+python/offline_package/
 
 # Build artifacts and installers
 ApiAi-Setup-*.exe
