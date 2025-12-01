@@ -58,3 +58,4 @@ run_app.bat
 # Rust
 rust/target/
 rust/Cargo.lock
+*.bak
