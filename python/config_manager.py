@@ -11,7 +11,8 @@ class ConfigManager:
     
     def __init__(self, config_name="config_qt.json"):
         self.config_name = config_name
-        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        # Base dir is project root (parent of python/)
+        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.config_path = os.path.join(self.base_dir, config_name)
         self.config = {}
         self.load_config()
@@ -46,7 +47,7 @@ def initialize_config_from_template(config_name="config_qt.json"):
     Инициализирует конфиг из шаблона при первом запуске.
     """
     # Определяем пути
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     config_path = os.path.join(base_dir, config_name)
     
     # Если конфиг уже есть - ничего не делаем
@@ -90,6 +91,11 @@ def initialize_config_from_template(config_name="config_qt.json"):
             "telegram_bot_url": "http://localhost:8000/ai_query",
             "telegram_bot_port": 8000,
             "telegram_use_encryption": True
+        },
+        "telegram_security": {
+            "app_id": "apiai-v1",
+            "enable_signature": True,
+            "verify_ssl": True
         }
     }
     

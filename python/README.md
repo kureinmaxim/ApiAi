@@ -41,7 +41,7 @@ This is the **stable production version** of ApiAi, written in Python with PySid
 
 ## Configuration
 
-On first run, `config_qt.json` will be created automatically from the template.
+On first run, `config_qt.json` will be created automatically in the **project root** (one level up).
 
 To configure API keys:
 1. Double-click developer name in footer

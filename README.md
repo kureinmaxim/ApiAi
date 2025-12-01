@@ -79,7 +79,7 @@ python3 main.py
 > **Installed Version:** The Windows installer does NOT require administrator privileges and installs to `%LOCALAPPDATA%\ApiAi` (user directory). The virtual environment `.venv` is created automatically in the same folder on first run.
 
 ## Configuration
-On first run, the application creates `config_qt.json` automatically. 
+On first run, the application creates `config_qt.json` automatically in the **project root**.
 
 To configure API keys:
 1. Double-click on developer name in footer
@@ -92,6 +92,28 @@ To configure API keys:
 - **OpenAI GPT**: Get API key from [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 - **Telegram Bot**: Configure custom bot API endpoint
 
+## Version Management
+
+The project uses a synchronized versioning system for both Python and Rust.
+
+### From Rust Directory (`rust/`)
+Use the provided `Makefile` for simple commands:
+
+```bash
+make version-status       # Check current version
+make version-sync         # Sync local config
+make version-bump-patch   # 1.0.0 -> 1.0.1
+make version-bump-minor   # 1.0.0 -> 1.1.0
+```
+
+### From Python Directory (`python/`)
+Use the python script directly:
+
+```bash
+python scripts/update_version.py status
+python scripts/update_version.py bump --type patch
+```
+
 ## Usage
 1. Launch the application
 2. Select AI provider from dropdown
@@ -102,7 +124,7 @@ To configure API keys:
 ## Security
 - PIN protection for settings access
 - AES-256-GCM encryption for Telegram Bot communication
-- API keys stored locally in `config_qt.json`
+- API keys stored locally in `config_qt.json` (git-ignored)
 
 ## License
 Private use

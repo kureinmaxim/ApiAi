@@ -13,9 +13,70 @@ from datetime import datetime
 from pathlib import Path
 
 
+def get_project_root():
+    """Получает корень python проекта"""
+    return Path(__file__).parent.parent
+
+
 def get_repo_root():
     """Получает корень всего репозитория (над python/)"""
     return get_project_root().parent
+
+
+def get_local_config_path():
+    """Возвращает путь к локальному конфигу (в корне репозитория)"""
+    return get_repo_root() / "config_qt.json"
+
+
+def get_template_path():
+    """Возвращает путь к шаблону конфига"""
+    return get_project_root() / "config" / "config_qt.json.template"
+
+
+def load_template():
+    """Загружает шаблон конфигурации"""
+    template_path = get_template_path()
+    if not template_path.exists():
+        print(f"❌ Шаблон не найден: {template_path}")
+        sys.exit(1)
+    
+    with open(template_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+
+def save_template(data):
+    """Сохраняет шаблон конфигурации"""
+    template_path = get_template_path()
+    with open(template_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f"✅ Обновлен шаблон: {template_path}")
+
+
+def get_current_date():
+    """Возвращает текущую дату DD.MM.YYYY"""
+    return datetime.now().strftime("%d.%m.%Y")
+
+
+def get_current_date_iso():
+    """Возвращает текущую дату YYYY-MM-DD"""
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def bump_version(current_version, bump_type):
+    """Увеличивает версию"""
+    major, minor, patch = map(int, current_version.split('.'))
+    
+    if bump_type == 'major':
+        major += 1
+        minor = 0
+        patch = 0
+    elif bump_type == 'minor':
+        minor += 1
+        patch = 0
+    elif bump_type == 'patch':
+        patch += 1
+        
+    return f"{major}.{minor}.{patch}"
 
 
 def update_rust_files(new_version, dry_run=False):
@@ -99,12 +160,25 @@ def update_version(bump_type=None, version=None, release_date=None, developer=No
     
     template['app_info'] = app_info
     
+    # Обновляем app_id на основе мажорной версии
+    major_version = new_version.split('.')[0]
+    new_app_id = f"apiai-v{major_version}"
+    
+    # Обновляем app_id в api_keys
+    if 'api_keys' in template:
+        template['api_keys']['app_id'] = new_app_id
+    
+    # Обновляем app_id в telegram_security
+    if 'telegram_security' in template:
+        template['telegram_security']['app_id'] = new_app_id
+    
     # Сообщаем об изменениях
     print(f"\n{'='*60}")
     print(f"📦 ОБНОВЛЕНИЕ ВЕРСИИ ApiAi")
     print(f"{'='*60}")
     print(f"  Старая версия: {current_version}")
     print(f"  Новая версия:  {new_version}")
+    print(f"  APP ID:        {new_app_id}")
     if not no_release_date:
         print(f"  Дата релиза:   {app_info['release_date']}")
     print(f"{'='*60}\n")
@@ -112,6 +186,7 @@ def update_version(bump_type=None, version=None, release_date=None, developer=No
     if dry_run:
         print("🔍 Режим тестирования - изменения не сохранены")
         update_rust_files(new_version, dry_run=True)
+        update_installer_iss(new_version, dry_run=True)
         return
     
     # Сохраняем шаблон
@@ -120,10 +195,40 @@ def update_version(bump_type=None, version=None, release_date=None, developer=No
     # Обновляем Rust файлы
     update_rust_files(new_version, dry_run=False)
     
+    # Обновляем Installer
+    update_installer_iss(new_version, dry_run=False)
+    
     print("\n💡 Следующие шаги:")
     print("   1. Синхронизируйте: python scripts/update_version.py sync")
     print("   2. Проверьте статус: python scripts/update_version.py status")
     print("   3. Закоммитьте: git add config/ && git commit -m 'Release: v{}'".format(new_version))
+
+
+def update_installer_iss(new_version, dry_run=False):
+    """Обновляет версию в Inno Setup скрипте"""
+    repo_root = get_repo_root()
+    iss_file = repo_root / "python" / "deployment" / "installer.iss"
+    
+    if not iss_file.exists():
+        return
+
+    try:
+        with open(iss_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # #define MyAppVersion "1.0.0"
+        import re
+        new_content = re.sub(r'#define MyAppVersion "\d+\.\d+\.\d+"', f'#define MyAppVersion "{new_version}"', content)
+        
+        if content != new_content:
+            if not dry_run:
+                with open(iss_file, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print(f"✅ Обновлен installer.iss: {new_version}")
+            else:
+                print(f"🔍 [Dry Run] Обновлен бы installer.iss: {new_version}")
+    except Exception as e:
+        print(f"❌ Ошибка обновления installer.iss: {e}")
 
 
 def show_status():

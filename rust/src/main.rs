@@ -76,9 +76,8 @@ const _COMPONENT_ANALYSIS_TEMPLATE: &str = r#"Роль: Инженер-разр�
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([800.0, 600.0])
-            .with_min_inner_size([500.0, 400.0])
-            .with_title("ApiAi"),
+            .with_inner_size([600.0, 500.0])
+            .with_min_inner_size([500.0, 400.0]),
         ..Default::default()
     };
     
@@ -96,7 +95,6 @@ fn main() -> Result<(), eframe::Error> {
 // App state
 pub struct ApiAiApp {
     search_query: String,
-    search_results: Vec<String>,
     prompt_mode: PromptMode,
     selected_provider: Provider,
     dark_mode: bool,
@@ -114,6 +112,7 @@ pub struct ApiAiApp {
     settings_anthropic_key: String,
     settings_openai_key: String,
     settings_telegram_url: String,
+    settings_telegram_port: u16,
     settings_telegram_key: String,
     settings_telegram_enc_key: String,
     settings_use_encryption: bool,
@@ -121,6 +120,9 @@ pub struct ApiAiApp {
     show_openai_password: bool,
     show_telegram_password: bool,
     show_enc_password: bool,
+    
+    // Response state
+    response_text: String,
 }
 
 #[derive(Default, PartialEq)]
@@ -145,11 +147,19 @@ struct SecurityConfig {
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
+struct TelegramSecurityConfig {
+    app_id: String,
+    enable_signature: bool,
+    verify_ssl: bool,
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 struct AppConfig {
     app_info: AppInfo,
     api_keys: ApiKeys,
     ui: UiConfig,
     security: SecurityConfig,
+    telegram_security: TelegramSecurityConfig,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -179,7 +189,7 @@ impl Default for AppConfig {
         Self {
             app_info: AppInfo {
                 name: "ApiAi".to_string(),
-                version: "1.0.0".to_string(),
+                version: "1.0.5".to_string(),
                 developer_en: "Maksim Kurein".to_string(),
             },
             api_keys: ApiKeys {
@@ -197,6 +207,11 @@ impl Default for AppConfig {
                 pin_code: "1234".to_string(),
                 require_pin: true,
             },
+            telegram_security: TelegramSecurityConfig {
+                app_id: "apiai-v1".to_string(),
+                enable_signature: true,
+                verify_ssl: true,
+            },
         }
     }
 }
@@ -205,12 +220,19 @@ impl AppConfig {
     fn config_path() -> std::path::PathBuf {
         // Try to find config in project root first
         let current_dir = std::env::current_dir().unwrap_or_default();
-        let project_config = current_dir.join("config_qt.json");
-        
-        if project_config.exists() {
-            return project_config;
+    let project_config = current_dir.join("config_qt.json");
+    
+    if project_config.exists() {
+        return project_config;
+    }
+    
+    // Check parent directory (project root if running from rust/)
+    if let Some(parent) = current_dir.parent() {
+        let parent_config = parent.join("config_qt.json");
+        if parent_config.exists() {
+            return parent_config;
         }
-        
+    }    
         // Otherwise use user's home directory
         if let Some(home) = dirs::home_dir() {
             home.join(".config").join("apiai").join("config_qt.json")
@@ -251,7 +273,6 @@ impl Default for ApiAiApp {
             config: AppConfig::default(),
             dark_mode: true,
             search_query: String::new(),
-            search_results: Vec::new(),
             prompt_mode: PromptMode::default(),
             selected_provider: Provider::default(),
             show_settings: false,
@@ -263,6 +284,7 @@ impl Default for ApiAiApp {
             settings_anthropic_key: String::new(),
             settings_openai_key: String::new(),
             settings_telegram_url: String::new(),
+            settings_telegram_port: 8000,
             settings_telegram_key: String::new(),
             settings_telegram_enc_key: String::new(),
             settings_use_encryption: true,
@@ -270,6 +292,7 @@ impl Default for ApiAiApp {
             show_openai_password: false,
             show_telegram_password: false,
             show_enc_password: false,
+            response_text: String::new(),
         }
     }
 }
@@ -329,9 +352,11 @@ impl ApiAiApp {
     }
     
     fn perform_search(&mut self) {
-        // Implement search functionality here
-        self.search_results.push(format!("Search for: {}", self.search_query));
-        self.search_query.clear();
+        // Simulate AI response (TODO: Implement actual API call)
+        if !self.search_query.is_empty() {
+            self.response_text = format!("Response to: {}\n\n[AI response will appear here after API integration]", self.search_query);
+            self.search_query.clear();
+        }
     }
     
     fn configure_theme(&self, ctx: &egui::Context) {
@@ -340,26 +365,26 @@ impl ApiAiApp {
             
             // Catppuccin Macchiato (Dark Theme from Python)
             let base = egui::Color32::from_rgb(30, 30, 46);          // #1e1e2e (Base)
-            let surface1 = egui::Color32::from_rgb(49, 50, 68);      // #313244 (Surface1)
+            let surface1 = egui::Color32::from_rgb(49, 50, 68);      // #313244 (Surface1 - for inputs)
             let surface2 = egui::Color32::from_rgb(69, 71, 90);      // #45475a (Surface2)
             let text = egui::Color32::from_rgb(224, 229, 255);       // #e0e5ff (Text)
             let blue = egui::Color32::from_rgb(90, 143, 234);        // #5a8fea (Darker Blue)
             let lavender = egui::Color32::from_rgb(203, 166, 247);   // #cba6f7 (Lavender)
-            let darker_bg = egui::Color32::from_rgb(26, 27, 38);     // #1a1b26 (Darker Base for inputs)
             
             // Background colors
             v.window_fill = base;
             v.panel_fill = base;
-            v.faint_bg_color = darker_bg; // Darker input fields background
+            v.faint_bg_color = surface1; // Input fields background - not too dark
+            v.extreme_bg_color = surface1; // TextEdit background - crucial for not being black
             
             // Text colors
             v.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0, text);
-            v.widgets.noninteractive.weak_bg_fill = darker_bg;
+            v.widgets.noninteractive.weak_bg_fill = surface1;
             v.widgets.noninteractive.bg_fill = base;
             
             // Interactive widgets (buttons, inputs)
-            v.widgets.inactive.bg_fill = darker_bg;
-            v.widgets.inactive.weak_bg_fill = darker_bg;
+            v.widgets.inactive.bg_fill = surface1;
+            v.widgets.inactive.weak_bg_fill = surface1;
             v.widgets.inactive.fg_stroke = egui::Stroke::new(1.0, text);
             v.widgets.inactive.rounding = egui::Rounding::same(4.0);
             
@@ -403,23 +428,23 @@ impl ApiAiApp {
             
             // Catppuccin Latte (Light Theme from Python)
             let base = egui::Color32::from_rgb(239, 241, 245);       // #eff1f5 (Base)
-            let surface1 = egui::Color32::from_rgb(204, 208, 218);   // #ccd0da (Surface1)
-            let text = egui::Color32::from_rgb(60, 63, 81);          // #3c3f51 (Text)
+            let text = egui::Color32::from_rgb(76, 79, 105);         // #4c4f69 (Text) - Darker and more readable
             let blue = egui::Color32::from_rgb(30, 102, 245);        // #1e66f5 (Blue)
             
             v.window_fill = base;
             v.panel_fill = base;
-            v.faint_bg_color = surface1;
+            v.faint_bg_color = egui::Color32::WHITE;   // White inputs
+            v.extreme_bg_color = egui::Color32::WHITE; // White text edits
             
             v.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0, text);
-            v.widgets.inactive.bg_fill = surface1;
+            v.widgets.inactive.bg_fill = egui::Color32::WHITE;
             v.widgets.inactive.fg_stroke = egui::Stroke::new(1.0, text);
             
             v.widgets.active.bg_fill = blue;
             v.widgets.active.fg_stroke = egui::Stroke::new(2.0, egui::Color32::WHITE);
             
-            v.selection.bg_fill = blue.linear_multiply(0.4);
-            v.selection.stroke = egui::Stroke::new(1.0, egui::Color32::WHITE);
+            v.selection.bg_fill = blue.linear_multiply(0.2);
+            v.selection.stroke = egui::Stroke::new(1.0, text); // Dark text selection
             
             v.window_rounding = egui::Rounding::same(8.0);
             v.widgets.noninteractive.rounding = egui::Rounding::same(4.0);
@@ -440,9 +465,24 @@ impl eframe::App for ApiAiApp {
 
         // Footer (Status Bar)
         egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
+            // Add background color for better visibility
+            let footer_bg = if self.dark_mode {
+                egui::Color32::from_rgb(24, 24, 37)  // Darker in dark mode
+            } else {
+                egui::Color32::from_rgb(220, 222, 228)  // Light gray in light mode
+            };
+            
+            let footer_text_color = egui::Color32::from_rgb(108, 112, 134); // #6c7086
+            
+            ui.visuals_mut().widgets.noninteractive.bg_fill = footer_bg;
+            
             ui.horizontal(|ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                    let developer_label = ui.label(egui::RichText::new(format!("Developer: {}", self.config.app_info.developer_en)).strong());
+                    let developer_text = format!("Developer: {}", self.config.app_info.developer_en);
+                    let developer_label = ui.add(
+                        egui::Label::new(egui::RichText::new(developer_text).color(footer_text_color).strong())
+                            .sense(egui::Sense::click())
+                    );
                     
                     // Double-click to unlock
                     if developer_label.double_clicked() {
@@ -453,11 +493,20 @@ impl eframe::App for ApiAiApp {
                         }
                     }
                     
+                    // Tooltip
+                    developer_label.on_hover_text("Double click to unlock expert mode");
+                    
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        ui.label("730x550"); // Placeholder for resolution/status
-                        ui.label("Local");   // Placeholder for connection status
-                        ui.label("Mode: Simple"); // Placeholder for mode
-                        ui.label("DB: 1.1 (2025-11-24)"); // Placeholder for DB version
+                        // Get actual window size
+                        let screen_rect = ctx.input(|i| i.screen_rect());
+                        let size_text = format!("{}x{}", screen_rect.width() as i32, screen_rect.height() as i32);
+                        ui.label(egui::RichText::new(size_text).color(footer_text_color));
+                        
+                        // Separator
+                        ui.label(egui::RichText::new("|").color(footer_text_color));
+                        
+                        // Release date from config
+                        ui.label(egui::RichText::new(format!("Release: {}", self.config.app_info.version)).color(footer_text_color));
                     });
                 });
             });
@@ -547,6 +596,13 @@ impl eframe::App for ApiAiApp {
         
         // Settings Dialog
         if self.show_settings {
+            // Define label color for settings dialog
+            let settings_label_color = if self.dark_mode {
+                egui::Color32::WHITE
+            } else {
+                egui::Color32::from_rgb(76, 79, 105) // Dark text for light mode
+            };
+            
             egui::Window::new("⚙️ Settings - API Keys")
                 .collapsible(false)
                 .resizable(true)
@@ -558,7 +614,7 @@ impl eframe::App for ApiAiApp {
                         
                         // Anthropic
                         ui.group(|ui| {
-                            ui.label(egui::RichText::new("Anthropic Claude API Key:").strong());
+                            ui.label(egui::RichText::new("Anthropic Claude API Key:").strong().color(settings_label_color));
                             ui.horizontal(|ui| {
                                 let text_edit = if self.show_anthropic_password {
                                     egui::TextEdit::singleline(&mut self.settings_anthropic_key)
@@ -574,7 +630,7 @@ impl eframe::App for ApiAiApp {
                         
                         // OpenAI
                         ui.group(|ui| {
-                            ui.label(egui::RichText::new("OpenAI GPT API Key:").strong());
+                            ui.label(egui::RichText::new("OpenAI GPT API Key:").strong().color(settings_label_color));
                             ui.horizontal(|ui| {
                                 let text_edit = if self.show_openai_password {
                                     egui::TextEdit::singleline(&mut self.settings_openai_key)
@@ -595,12 +651,21 @@ impl eframe::App for ApiAiApp {
                         
                         // Telegram/Server API
                         ui.group(|ui| {
-                            ui.label(egui::RichText::new("Server API URL:").strong());
-                            ui.text_edit_singleline(&mut self.settings_telegram_url);
+                            ui.horizontal(|ui| {
+                                ui.vertical(|ui| {
+                                    ui.label(egui::RichText::new("Server API URL:").strong().color(settings_label_color));
+                                    ui.text_edit_singleline(&mut self.settings_telegram_url);
+                                });
+                                ui.add_space(10.0);
+                                ui.vertical(|ui| {
+                                    ui.label(egui::RichText::new("Port:").strong().color(settings_label_color));
+                                    ui.add(egui::DragValue::new(&mut self.settings_telegram_port).range(1..=65535));
+                                });
+                            });
                             
                             ui.add_space(8.0);
                             
-                            ui.label(egui::RichText::new("Server API Key:").strong());
+                            ui.label(egui::RichText::new("Server API Key:").strong().color(settings_label_color));
                             ui.horizontal(|ui| {
                                 let text_edit = if self.show_telegram_password {
                                     egui::TextEdit::singleline(&mut self.settings_telegram_key)
@@ -618,7 +683,7 @@ impl eframe::App for ApiAiApp {
                             ui.add_space(8.0);
                             
                             ui.add_enabled_ui(self.settings_use_encryption, |ui| {
-                                ui.label(egui::RichText::new("Encryption Key:").strong());
+                                ui.label(egui::RichText::new("Encryption Key:").strong().color(settings_label_color));
                                 ui.horizontal(|ui| {
                                     let text_edit = if self.show_enc_password {
                                         egui::TextEdit::singleline(&mut self.settings_telegram_enc_key)
@@ -634,9 +699,15 @@ impl eframe::App for ApiAiApp {
                         ui.add_space(15.0);
                         
                         // Help
-                        ui.label(egui::RichText::new("💡 How to get API keys:").strong());
-                        ui.label("• Anthropic: console.anthropic.com");
-                        ui.label("• OpenAI: platform.openai.com/api-keys");
+                        ui.label(egui::RichText::new("💡 How to get API keys:").strong().color(settings_label_color));
+                        ui.horizontal(|ui| {
+                            ui.label("• Anthropic: ");
+                            ui.hyperlink_to("console.anthropic.com", "https://console.anthropic.com");
+                        });
+                        ui.horizontal(|ui| {
+                            ui.label("• OpenAI: ");
+                            ui.hyperlink_to("platform.openai.com/api-keys", "https://platform.openai.com/api-keys");
+                        });
                         ui.label("• AI Server: Contact your server administrator");
                         
                         ui.add_space(20.0);
@@ -675,105 +746,137 @@ impl eframe::App for ApiAiApp {
                 });
         }
         
-        // Main content panel
-        egui::CentralPanel::default().show(ctx, |ui| {
-            let available_height = ui.available_height();
-            
+        // --- NEW LAYOUT STRUCTURE ---
+        
+        // Define label color explicitly based on theme to ensure visibility
+        let label_color = if self.dark_mode {
+            egui::Color32::WHITE
+        } else {
+            egui::Color32::from_rgb(76, 79, 105) // Dark text for light mode
+        };
+        
+        // 1. Header Panel (Top)
+        egui::TopBottomPanel::top("header_panel").show(ctx, |ui| {
             ui.vertical_centered(|ui| {
-                ui.add_space(available_height * 0.05);
-                
-                // Title
-                ui.heading(egui::RichText::new(&self.config.app_info.name).size(32.0).strong().color(egui::Color32::from_rgb(50, 160, 255)));
-                ui.label(egui::RichText::new("AI-powered component analysis and chat assistant").size(14.0).weak());
-                
+                ui.add_space(10.0);
+                ui.heading(egui::RichText::new(&self.config.app_info.name).size(18.0).strong().color(egui::Color32::from_rgb(50, 160, 255)));
+                ui.label(egui::RichText::new("AI-powered component analysis and chat assistant").size(11.0).weak());
+                ui.add_space(10.0);
+            });
+        });
+
+        // 2. Input Panel (Top)
+        egui::TopBottomPanel::top("input_panel").show(ctx, |ui| {
+            ui.horizontal(|ui| {
                 ui.add_space(20.0);
-                
-                // Search Container - Adjusted width for 600px window
-                let search_panel_width = 500.0;
-                
-                ui.allocate_ui_with_layout(
-                    egui::vec2(search_panel_width, 0.0),
-                    egui::Layout::top_down(egui::Align::Center), 
-                    |ui| {
-                        // Mode Selection
-                        ui.group(|ui| {
-                            ui.horizontal(|ui| {
-                                ui.label(egui::RichText::new("Mode:").strong().color(ui.visuals().text_color()));
-                                ui.radio_value(&mut self.prompt_mode, PromptMode::GeneralChat, "💬 General Chat");
-                                ui.radio_value(&mut self.prompt_mode, PromptMode::ComponentAnalysis, "🔧 Component Analysis");
-                            });
-                        });
-                        
-                        ui.add_space(10.0);
+                ui.vertical(|ui| {
+                    let panel_width = ui.available_width() - 20.0;
+                    
+                    // Mode Selection
+                    ui.horizontal(|ui| {
+                        ui.label(egui::RichText::new("Mode:").strong().color(label_color));
+                        ui.radio_value(&mut self.prompt_mode, PromptMode::GeneralChat, "💬 General Chat");
+                        ui.radio_value(&mut self.prompt_mode, PromptMode::ComponentAnalysis, "🔧 Component Analysis");
+                    });
+                    
+                    ui.add_space(5.0);
 
-                        // Provider selection
-                        ui.horizontal(|ui| {
-                            ui.label(egui::RichText::new("Provider:").strong().color(ui.visuals().text_color()));
-                            ui.add_space(10.0);
-                            ui.selectable_value(&mut self.selected_provider, Provider::Anthropic, "Anthropic");
-                            ui.selectable_value(&mut self.selected_provider, Provider::OpenAI, "OpenAI");
-                            ui.selectable_value(&mut self.selected_provider, Provider::Telegram, "Telegram");
-                        });
-                        
-                        ui.add_space(15.0);
-                        
-                        // Input Label
-                        let input_label = match self.prompt_mode {
-                            PromptMode::GeneralChat => "Enter your prompt:",
-                            PromptMode::ComponentAnalysis => "Enter component name (e.g., STM32F103C8T6):",
-                        };
-                        
-                        ui.label(egui::RichText::new(input_label).size(14.0).color(ui.visuals().text_color()));
-                        ui.add_space(5.0);
-
-                        // Search input - Multiline for better UX
-                        let response = ui.add(
-                            egui::TextEdit::multiline(&mut self.search_query)
-                                .hint_text(if self.prompt_mode == PromptMode::GeneralChat { "Ask anything..." } else { "Component part number..." })
-                                .desired_width(search_panel_width)
-                                .desired_rows(3) // More space for typing
-                                .font(egui::TextStyle::Body)
-                        );
-                        
-                        // Ctrl+Enter to search (since Enter creates new line in multiline)
-                        if response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter) && i.modifiers.command) {
-                            self.perform_search();
-                        }
-                        
-                        ui.add_space(20.0);
-                        
-                        // Search button
-                        let btn_text = match self.prompt_mode {
-                            PromptMode::GeneralChat => "   🚀 Send Request   ",
-                            PromptMode::ComponentAnalysis => "   🔍 Analyze Component   ",
-                        };
-
-                        let btn = egui::Button::new(egui::RichText::new(btn_text).size(16.0).strong())
-                            .min_size(egui::vec2(180.0, 36.0));
-                            
-                        if ui.add(btn).clicked() {
-                            self.perform_search();
-                        }
-                    }
-                );
-                
-                // Results area
-                if !self.search_results.is_empty() {
-                    ui.add_space(20.0);
-                    ui.separator();
+                    // Provider selection
+                    ui.horizontal(|ui| {
+                        ui.label(egui::RichText::new("Provider:").strong().color(label_color));
+                        ui.selectable_value(&mut self.selected_provider, Provider::Anthropic, "Anthropic");
+                        ui.selectable_value(&mut self.selected_provider, Provider::OpenAI, "OpenAI");
+                        ui.selectable_value(&mut self.selected_provider, Provider::Telegram, "Telegram");
+                    });
+                    
                     ui.add_space(10.0);
                     
+                    // Input Label
+                    let input_label = match self.prompt_mode {
+                        PromptMode::GeneralChat => "Enter your prompt:",
+                        PromptMode::ComponentAnalysis => "Enter component name:",
+                    };
+                    ui.label(egui::RichText::new(input_label).size(12.0).color(label_color));
+                    ui.add_space(3.0);
+
+                    // Search input
                     egui::ScrollArea::vertical()
-                        .max_height(300.0)
+                        .max_height(120.0)
                         .show(ui, |ui| {
-                            ui.vertical(|ui| {
-                                for result in &self.search_results {
-                                    ui.label(egui::RichText::new(result).text_style(egui::TextStyle::Body));
-                                    ui.add_space(10.0);
-                                }
-                            });
+                            let response = ui.add(
+                                egui::TextEdit::multiline(&mut self.search_query)
+                                    .hint_text(if self.prompt_mode == PromptMode::GeneralChat { "Ask anything..." } else { "Component part number..." })
+                                    .desired_width(panel_width)
+                                    .desired_rows(6)
+                                    .font(egui::TextStyle::Body)
+                            );
+                            
+                            // Ctrl+Enter to search
+                            if response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter) && i.modifiers.command) {
+                                self.perform_search();
+                            }
                         });
-                }
+                    
+                    ui.add_space(8.0);
+                    
+                    // Send Button
+                    let btn_text = match self.prompt_mode {
+                        PromptMode::GeneralChat => "   🚀 Send Request   ",
+                        PromptMode::ComponentAnalysis => "   🔍 Analyze Component   ",
+                    };
+                    
+                    if ui.add_sized([panel_width, 35.0], egui::Button::new(btn_text)).clicked() {
+                        self.perform_search();
+                    }
+                    
+                    ui.add_space(10.0);
+                });
+            });
+        });
+
+        // 3. Export Panel (Bottom) - Docked above the footer
+        egui::TopBottomPanel::bottom("export_panel").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.add_space(20.0);
+                ui.vertical(|ui| {
+                    ui.add_space(10.0);
+                    ui.horizontal(|ui| {
+                        ui.label(egui::RichText::new("Export:").strong().color(label_color));
+                        
+                        let has_response = !self.response_text.is_empty();
+                        
+                        ui.add_enabled_ui(has_response, |ui| {
+                            if ui.button("📄 TXT").clicked() { /* TODO */ }
+                            if ui.button("📘 DOCX").clicked() { /* TODO */ }
+                            if ui.button("📕 PDF").clicked() { /* TODO */ }
+                            if ui.button("🌐 HTML").clicked() { /* TODO */ }
+                        });
+                    });
+                    ui.add_space(10.0);
+                });
+            });
+        });
+
+        // 4. Response Area (Central) - Fills remaining space
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.add_space(20.0);
+                ui.vertical(|ui| {
+                    let panel_width = ui.available_width() - 20.0;
+                    
+                    ui.label(egui::RichText::new("Response:").size(12.0).strong().color(label_color));
+                    ui.add_space(3.0);
+                    
+                    egui::ScrollArea::vertical()
+                        .show(ui, |ui| {
+                            ui.add_sized(
+                                ui.available_size(),
+                                egui::TextEdit::multiline(&mut self.response_text)
+                                    .desired_width(panel_width)
+                                    .font(egui::TextStyle::Body)
+                            );
+                        });
+                });
             });
         });
         

@@ -138,6 +138,32 @@ python scripts/update_version.py --bump patch
 python scripts/update_version.py --version 1.2.0
 ```
 
+python scripts/update_version.py --version 1.2.0
+```
+
+---
+
+## Управление из Rust проекта
+
+Если вы находитесь в терминале в папке `rust/`, вы можете использовать простые команды `make`:
+
+### 📊 Статус
+```bash
+make version-status
+```
+
+### 🆙 Обновление версии
+```bash
+make version-bump-patch   # 1.0.0 → 1.0.1
+make version-bump-minor   # 1.0.0 → 1.1.0
+make version-bump-major   # 1.0.0 → 2.0.0
+```
+
+### 🎯 Установка конкретной версии
+```bash
+make version-set v=1.2.3
+```
+
 ---
 
 ## Рабочие сценарии

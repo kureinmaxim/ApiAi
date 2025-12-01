@@ -99,7 +99,7 @@ python3 -m pip install -r requirements.txt
 python main.py
 ```
 
-При первом запуске приложение автоматически создаст `config_qt.json` из шаблона.
+При первом запуске приложение автоматически создаст `config_qt.json` в **корне проекта** (на уровень выше).
 
 ---
 
@@ -109,19 +109,19 @@ python main.py
 
 **Windows PowerShell:**
 ```powershell
-Copy-Item config/config_qt.json.template config_qt.json
+Copy-Item config/config_qt.json.template ../config_qt.json
 ```
 
 **macOS/Linux (bash):**
 ```bash
-cp config/config_qt.json.template config_qt.json
+cp config/config_qt.json.template ../config_qt.json
 ```
 
 ---
 
 ## 📂 Структура config файла
 
-### `config_qt.json`
+### `config_qt.json` (в корне проекта)
 
 ```json
 {
