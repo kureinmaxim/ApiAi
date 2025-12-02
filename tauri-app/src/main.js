@@ -426,6 +426,12 @@ let currentProviderInfo = {
 // Update provider info in header
 function updateProviderInfo() {
   const providerInfo = document.getElementById('provider-info');
+  if (!providerInfo) {
+    // Element not found, try again later
+    setTimeout(updateProviderInfo, 100);
+    return;
+  }
+  
   const provider = providerSelect.value;
   
   let infoText = '';
