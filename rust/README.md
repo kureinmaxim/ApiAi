@@ -1,13 +1,13 @@
-# ApiAi - Rust Implementation
+# ApiAi - Rust CLI Implementation
 
 > [!WARNING]
-> **Experimental Version** - This is a work-in-progress rewrite of ApiAi in Rust. For production use, see the [Python version](../python/).
+> **Experimental Version** - This is a command-line experimental version. For modern GUI, see the [**Tauri version**](../tauri-app/). For stable desktop app, see the [Python version](../python/).
 
-Экспериментальная версия ApiAi на языке Rust.
+Экспериментальная версия ApiAi на языке Rust (CLI).
 
 ## 🚀 Запуск
 
-Для запуска экспериментальной Rust версии:
+Для запуска экспериментальной Rust CLI версии:
 
 ```bash
 cd rust
@@ -59,6 +59,13 @@ cargo run
  - [x] Config Manager (Shared)
  - [x] Encryption Module (Basic)
  - [x] API Client
- - [x] GUI Layer
- - [x] Settings Dialog
- - [x] Main Window
+ - [x] GUI Layer (egui - deprecated)
+ - [ ] Modern GUI (see Tauri version)
+ 
+ ## Рекомендация
+ 
+ Для современного GUI используйте [**Tauri версию**](../tauri-app/):
+ - ✨ Современный веб-интерфейс
+ - 🔒 PIN-защита настроек
+ - 🎨 Красивый дизайн с градиентами
+ - 📱 Адаптивная верстка

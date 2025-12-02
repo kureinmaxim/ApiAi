@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ApiAi</title>
+  <script type="module" src="/main.js" defer></script>
+</head>
+
+<body>
+  <!-- PIN Authentication Modal -->
+  <div id="pin-modal" class="pin-modal hidden">
+    <div class="pin-container">
+      <div class="pin-header">
+        <div class="lock-icon">🔒</div>
+        <h1>Settings Access</h1>
+        <p>Enter PIN to unlock settings</p>
+      </div>
+      <input type="password" id="pin-input" maxlength="4" placeholder="••••" autocomplete="off">
+      <div id="pin-error" class="pin-error hidden">Incorrect PIN</div>
+      <button id="pin-cancel" class="secondary-btn">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Main Application -->
+  <div class="container" id="main-app">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2>ApiAi</h2>
+        <div class="lock-status">
+          <span id="lock-indicator" class="locked" title="Settings Locked">🔒</span>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <label>Mode</label>
+        <div class="radio-group">
+          <label><input type="radio" name="mode" value="chat" checked> General Chat</label>
+          <label><input type="radio" name="mode" value="component"> Component Analysis</label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <label><input type="checkbox" id="chat-mode" checked> Chat Mode (Context)</label>
+      </div>
+
+      <div class="settings-group">
+        <label>Provider</label>
+        <select id="provider">
+          <option value="telegram">Telegram</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="openai">OpenAI</option>
+        </select>
+      </div>
+
+      <div class="settings-group" id="telegram-settings">
+        <label>Telegram URL</label>
+        <input type="text" id="telegram-url" value="localhost" disabled class="protected-field">
+
+        <label>Port</label>
+        <input type="number" id="telegram-port" value="8000" disabled class="protected-field">
+
+        <label><input type="checkbox" id="use-encryption" disabled class="protected-field"> Use Encryption</label>
+        <input type="password" id="encryption-key" placeholder="Encryption Key (Hex/String)"
+          class="hidden protected-field" disabled>
+      </div>
+
+      <div class="settings-group">
+        <label>API Key</label>
+        <input type="password" id="api-key" placeholder="Enter API Key" disabled class="protected-field">
+        <div class="checkbox-wrapper">
+          <label><input type="checkbox" id="show-keys"> Show Keys</label>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button id="save-settings" class="primary-btn small-btn">💾 Save Settings</button>
+        <button id="clear-chat" class="secondary-btn small-btn">🗑️ Clear Chat</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div id="chat-history" class="chat-history">
+        <!-- Messages will appear here -->
+        <div class="message system">
+          <div class="content">Welcome to ApiAi! Select a provider and start chatting.</div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <textarea id="prompt-input" placeholder="Ask anything... (Ctrl+Enter to send)"></textarea>
+        <button id="send-btn">Send 🚀</button>
+      </div>
+
+      <div class="export-area">
+        <button id="export-txt" class="export-btn" title="Export as Text">📄 TXT</button>
+        <button id="export-pdf" class="export-btn" title="Export as PDF">📕 PDF</button>
+        <button id="export-docx" class="export-btn" title="Export as Word">📘 DOCX</button>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="footer-item" id="developer-name" title="Double-click to unlock settings">
+          <span class="footer-label">Developer:</span>
+          <span class="footer-value">Kurein M.N.</span>
+        </div>
+        <div class="footer-item">
+          <span class="footer-label">Version:</span>
+          <span class="footer-value">2.0.1</span>
+        </div>
+        <div class="footer-item">
+          <span class="footer-label">Release:</span>
+          <span class="footer-value">01.12.2025</span>
+        </div>
+        <div class="footer-item">
+          <span class="footer-label">Window:</span>
+          <span class="footer-value" id="window-size">-</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

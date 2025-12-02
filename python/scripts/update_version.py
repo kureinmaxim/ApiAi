@@ -195,6 +195,9 @@ def update_version(bump_type=None, version=None, release_date=None, developer=No
     # Обновляем Rust файлы
     update_rust_files(new_version, dry_run=False)
     
+    # Обновляем Tauri HTML
+    update_tauri_html(new_version, app_info.get('release_date'), app_info.get('developer_en'), dry_run=False)
+    
     # Обновляем Installer
     update_installer_iss(new_version, dry_run=False)
     
@@ -202,6 +205,52 @@ def update_version(bump_type=None, version=None, release_date=None, developer=No
     print("   1. Синхронизируйте: python scripts/update_version.py sync")
     print("   2. Проверьте статус: python scripts/update_version.py status")
     print("   3. Закоммитьте: git add config/ && git commit -m 'Release: v{}'".format(new_version))
+
+
+def update_tauri_html(new_version, release_date=None, developer=None, dry_run=False):
+    """Обновляет версию, дату и разработчика в index.html"""
+    repo_root = get_repo_root()
+    html_file = repo_root / "tauri-app" / "src" / "index.html"
+    
+    if not html_file.exists():
+        print(f"⚠️ Tauri HTML не найден: {html_file}")
+        return
+
+    try:
+        with open(html_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        new_content = content
+        import re
+        
+        # Обновляем версию
+        # <span class="footer-value">2.0.0</span> (в блоке Version)
+        # Ищем контекст, чтобы не заменить другие значения
+        version_pattern = r'(<span class="footer-label">Version:</span>\s*<span class="footer-value">)([^<]+)(</span>)'
+        if re.search(version_pattern, new_content):
+            new_content = re.sub(version_pattern, fr'\g<1>{new_version}\g<3>', new_content)
+            
+        # Обновляем дату релиза
+        if release_date:
+            date_pattern = r'(<span class="footer-label">Release:</span>\s*<span class="footer-value">)([^<]+)(</span>)'
+            if re.search(date_pattern, new_content):
+                new_content = re.sub(date_pattern, fr'\g<1>{release_date}\g<3>', new_content)
+                
+        # Обновляем разработчика
+        if developer:
+            dev_pattern = r'(<span class="footer-label">Developer:</span>\s*<span class="footer-value">)([^<]+)(</span>)'
+            if re.search(dev_pattern, new_content):
+                new_content = re.sub(dev_pattern, fr'\g<1>{developer}\g<3>', new_content)
+        
+        if content != new_content:
+            if not dry_run:
+                with open(html_file, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print(f"✅ Обновлен index.html: {new_version}")
+            else:
+                print(f"🔍 [Dry Run] Обновлен бы index.html: {new_version}")
+    except Exception as e:
+        print(f"❌ Ошибка обновления index.html: {e}")
 
 
 def update_installer_iss(new_version, dry_run=False):
@@ -256,7 +305,8 @@ def show_status():
             print(f"✅ Локальный config синхронизирован")
         else:
             print(f"⚠️  Локальный config устарел ({local_version})")
-            print(f"   Выполните: python scripts/update_version.py sync")
+            print(f"   Выполните: make version-sync")
+            print(f"   Или:       python scripts/update_version.py sync")
     else:
         print(f"ℹ️  Локальный config не создан (будет создан при запуске)")
     
@@ -288,6 +338,15 @@ def sync_config():
     
     print(f"✅ Локальный config синхронизирован: {local_config}")
     print(f"   Версия: {template['app_info']['version']}")
+
+    # Также обновляем все остальные файлы, чтобы гарантировать синхронизацию
+    version = template['app_info']['version']
+    release_date = template['app_info'].get('release_date')
+    developer = template['app_info'].get('developer_en')
+    
+    update_rust_files(version)
+    update_tauri_html(version, release_date, developer)
+    update_installer_iss(version)
 
 
 def main():

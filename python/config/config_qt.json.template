@@ -1,7 +1,7 @@
 {
   "app_info": {
     "name": "ApiAi",
-    "version": "1.0.5",
+    "version": "2.0.1",
     "edition": "Standard",
     "description": "ApiAi Application",
     "release_date": "01.12.2025",
@@ -38,10 +38,10 @@
     "telegram_enc_key": "",
     "telegram_use_encryption": true,
     "telegram_hmac_secret": "",
-    "app_id": "apiai-v1"
+    "app_id": "apiai-v2"
   },
   "telegram_security": {
-    "app_id": "apiai-v1",
+    "app_id": "apiai-v2",
     "enable_signature": true,
     "verify_ssl": true
   }

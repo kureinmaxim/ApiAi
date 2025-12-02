@@ -267,6 +267,9 @@ impl ApiClient for TelegramClient {
             payload["conversation_id"] = serde_json::json!(conv_id);
         }
 
+        println!("Sending request to: {}", self.url);
+        println!("Using API Key: {}...", self.api_key.chars().take(4).collect::<String>());
+
         let response = client
             .post(&self.url)
             .headers(headers)

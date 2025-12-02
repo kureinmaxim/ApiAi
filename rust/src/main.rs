@@ -2,6 +2,7 @@
 // Main entry point with egui GUI
 
 mod api;
+mod encryption;
 
 use eframe::egui;
 use egui_extras::install_image_loaders;
@@ -123,6 +124,19 @@ pub struct ApiAiApp {
     
     // Response state
     response_text: String,
+    is_loading: bool,
+    
+    // Conversation history
+    conversation_history: Vec<(String, String)>, // (user_message, ai_response)
+    
+    // Chat mode
+    chat_mode_enabled: bool,
+    conversation_id: Option<String>,
+    
+    // Async runtime and channel
+    runtime: tokio::runtime::Runtime,
+    response_rx: std::sync::mpsc::Receiver<Result<(String, String, Option<String>), String>>,
+    response_tx: std::sync::mpsc::Sender<Result<(String, String, Option<String>), String>>,
 }
 
 #[derive(Default, PartialEq)]
@@ -134,9 +148,9 @@ enum PromptMode {
 
 #[derive(Default, PartialEq)]
 enum Provider {
-    #[default]
     Anthropic,
     OpenAI,
+    #[default]
     Telegram,
 }
 
@@ -189,7 +203,7 @@ impl Default for AppConfig {
         Self {
             app_info: AppInfo {
                 name: "ApiAi".to_string(),
-                version: "1.0.5".to_string(),
+                version: "2.0.1".to_string(),
                 developer_en: "Maksim Kurein".to_string(),
             },
             api_keys: ApiKeys {
@@ -269,6 +283,9 @@ impl AppConfig {
 
 impl Default for ApiAiApp {
     fn default() -> Self {
+        let (tx, rx) = std::sync::mpsc::channel();
+        let runtime = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
+        
         Self {
             config: AppConfig::default(),
             dark_mode: true,
@@ -293,6 +310,13 @@ impl Default for ApiAiApp {
             show_telegram_password: false,
             show_enc_password: false,
             response_text: String::new(),
+            is_loading: false,
+            conversation_history: Vec::new(),
+            chat_mode_enabled: true, // Enable chat mode by default
+            conversation_id: None,
+            runtime,
+            response_rx: rx,
+            response_tx: tx,
         }
     }
 }
@@ -330,7 +354,17 @@ impl ApiAiApp {
         // Save from dialog fields to config
         self.config.api_keys.anthropic = self.settings_anthropic_key.clone();
         self.config.api_keys.openai = self.settings_openai_key.clone();
-        self.config.api_keys.telegram_url = self.settings_telegram_url.clone();
+        
+        // Handle telegram URL - extract base URL and apply port if needed
+        let telegram_url = if self.settings_telegram_url.contains("://") {
+            // If URL contains protocol, use it as-is (user manually set full URL)
+            self.settings_telegram_url.clone()
+        } else {
+            // Otherwise construct URL with port
+            format!("http://{}:{}/ai_query", self.settings_telegram_url, self.settings_telegram_port)
+        };
+        
+        self.config.api_keys.telegram_url = telegram_url;
         self.config.api_keys.telegram_key = self.settings_telegram_key.clone();
         self.config.api_keys.telegram_enc_key = self.settings_telegram_enc_key.clone();
         self.config.api_keys.telegram_use_encryption = self.settings_use_encryption;
@@ -351,13 +385,61 @@ impl ApiAiApp {
         }
     }
     
+    
     fn perform_search(&mut self) {
-        // Simulate AI response (TODO: Implement actual API call)
-        if !self.search_query.is_empty() {
-            self.response_text = format!("Response to: {}\n\n[AI response will appear here after API integration]", self.search_query);
-            self.search_query.clear();
+        if self.search_query.is_empty() {
+            return;
         }
+        
+        // Set loading state
+        self.is_loading = true;
+        
+        // Get query and save to history
+        let query = self.search_query.clone();
+        self.search_query.clear();
+        
+        // Get API credentials
+        let api_key = match self.selected_provider {
+            Provider::Anthropic => self.config.api_keys.anthropic.clone(),
+            Provider::OpenAI => self.config.api_keys.openai.clone(),
+            Provider::Telegram => self.config.api_keys.telegram_key.clone(),
+        };
+        
+        let telegram_url = self.config.api_keys.telegram_url.clone();
+        let encryption_key = if !self.config.api_keys.telegram_enc_key.is_empty() {
+            Some(self.config.api_keys.telegram_enc_key.clone())
+        } else {
+            None
+        };
+        let use_encryption = self.config.api_keys.telegram_use_encryption;
+        let chat_mode = self.chat_mode_enabled;
+        let conversation_id = self.conversation_id.clone();
+        
+        // Create the appropriate client
+        let client: Box<dyn api::ApiClient> = match self.selected_provider {
+            Provider::Anthropic => Box::new(api::AnthropicClient::new(api_key)),
+            Provider::OpenAI => Box::new(api::OpenAIClient::new(api_key)),
+            Provider::Telegram => Box::new(api::TelegramClient::new(telegram_url, api_key, encryption_key, use_encryption, chat_mode, conversation_id)),
+        };
+        
+        // Spawn async task
+        let tx = self.response_tx.clone();
+        let user_query = query.clone();
+        self.runtime.spawn(async move {
+            let result = client.search(&query).await;
+            
+            let message = match result {
+                Ok(search_result) => {
+                    let conv_id = search_result.conversation_id.clone();
+                    Ok((user_query, search_result.text, conv_id))
+                }
+                Err(e) => Err(format!("Error: {}", e)),
+            };
+            
+            let _ = tx.send(message);
+        });
     }
+
     
     fn configure_theme(&self, ctx: &egui::Context) {
         let visuals = if self.dark_mode {
@@ -465,6 +547,39 @@ impl ApiAiApp {
 
 impl eframe::App for ApiAiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Check for responses from async tasks
+        if let Ok(result) = self.response_rx.try_recv() {
+            self.is_loading = false;
+            match result {
+                Ok((user_query, ai_response, conversation_id)) => {
+                    // Save conversation_id if provided
+                    if let Some(conv_id) = conversation_id {
+                        self.conversation_id = Some(conv_id);
+                    }
+                    
+                    // Save to conversation history
+                    self.conversation_history.push((user_query.clone(), ai_response.clone()));
+                    
+                    // Append to response text (keep conversation context)
+                    if !self.response_text.is_empty() {
+                        self.response_text.push_str("\n\n---\n\n");
+                    }
+                    self.response_text.push_str(&format!("👤 You: {}\n\n🤖 AI: {}", user_query, ai_response));
+                }
+                Err(error) => {
+                    if !self.response_text.is_empty() {
+                        self.response_text.push_str("\n\n---\n\n");
+                    }
+                    self.response_text.push_str(&format!("❌ Error: {}", error));
+                }
+            }
+        }
+        
+        // Request repaint if loading (to show spinner/animation)
+        if self.is_loading {
+            ctx.request_repaint();
+        }
+        
         self.configure_theme(ctx);
 
         // Footer (Status Bar)
@@ -784,6 +899,30 @@ impl eframe::App for ApiAiApp {
                     });
                     
                     ui.add_space(5.0);
+                    
+                    // Chat Mode Toggle and Clear Button
+                    ui.horizontal(|ui| {
+                        ui.checkbox(&mut self.chat_mode_enabled, "🔄 Chat Mode (remember context)");
+                        
+                        ui.add_space(10.0);
+                        
+                        // Clear Chat button - only enabled if conversation_id exists
+                        let has_conversation = self.conversation_id.is_some();
+                        ui.add_enabled_ui(has_conversation, |ui| {
+                            if ui.button("🗑️ Clear Chat").clicked() {
+                                self.conversation_id = None;
+                                self.conversation_history.clear();
+                                self.response_text.clear();
+                            }
+                        });
+                        
+                        // Show conversation ID if exists
+                        if let Some(ref conv_id) = self.conversation_id {
+                            ui.label(egui::RichText::new(format!("ID: {}", &conv_id[..12.min(conv_id.len())])).weak().small());
+                        }
+                    });
+                    
+                    ui.add_space(8.0);
 
                     // Provider selection
                     ui.horizontal(|ui| {
@@ -803,17 +942,20 @@ impl eframe::App for ApiAiApp {
                     ui.label(egui::RichText::new(input_label).size(12.0).color(label_color));
                     ui.add_space(3.0);
 
-                    // Search input - fixed width and height without scrollbar when empty
-                    let response = ui.add(
-                        egui::TextEdit::multiline(&mut self.search_query)
-                            .hint_text(if self.prompt_mode == PromptMode::GeneralChat { "Ask anything..." } else { "Component part number..." })
-                            .desired_width(panel_width)
-                            .desired_rows(6)
-                            .font(egui::TextStyle::Body)
-                    );
+                    // Search input - scrollable with fixed height
+                    egui::ScrollArea::vertical()
+                        .max_height(150.0)
+                        .show(ui, |ui| {
+                            ui.add(
+                                egui::TextEdit::multiline(&mut self.search_query)
+                                    .hint_text(if self.prompt_mode == PromptMode::GeneralChat { "Ask anything..." } else { "Component part number..." })
+                                    .desired_width(panel_width)
+                                    .font(egui::TextStyle::Body)
+                            );
+                        });
                     
                     // Ctrl+Enter to search
-                    if response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter) && i.modifiers.command) {
+                    if ui.input(|i| i.key_pressed(egui::Key::Enter) && i.modifiers.command) {
                         self.perform_search();
                     }
                     
@@ -882,30 +1024,25 @@ impl eframe::App for ApiAiApp {
 
         // 4. Response Area (Central) - Fills remaining space
         egui::CentralPanel::default().show(ctx, |ui| {
-            // Remove all padding to maximize space
-            let mut frame = egui::Frame::central_panel(ui.style());
-            frame.inner_margin = egui::Margin::symmetric(20.0, 0.0);
-            
-            frame.show(ui, |ui| {
+            ui.add_space(5.0);
+            ui.horizontal(|ui| {
+                ui.add_space(20.0);
                 ui.vertical(|ui| {
-                    // Use the same width as input panel
+                    // Match the width calculation from input panel EXACTLY
                     let panel_width = ui.available_width() - 20.0;
                     
                     ui.label(egui::RichText::new("Response:").size(12.0).strong().color(label_color));
-                    ui.add_space(3.0);
                     
-                    // Calculate exact rows to fill remaining space
+                    // Force TextEdit to fill all remaining space
                     let available_height = ui.available_height();
-                    let line_height = ui.text_style_height(&egui::TextStyle::Body);
-                    let rows = ((available_height - 10.0) / line_height).floor() as usize;
                     
-                    ui.add(
+                    ui.add_sized(
+                        [panel_width, available_height],
                         egui::TextEdit::multiline(&mut self.response_text)
-                            .desired_width(panel_width)
-                            .desired_rows(rows.max(15))
                             .font(egui::TextStyle::Body)
                     );
                 });
+                ui.add_space(20.0); // Match right margin from input panel
             });
         });
         

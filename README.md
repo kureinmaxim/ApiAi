@@ -4,21 +4,26 @@ AI-powered component search application with support for multiple AI providers.
 
 ## 📁 Project Structure
 
-This repository contains **two versions** of ApiAi:
+This repository contains **three versions** of ApiAi:
 
+- **`tauri-app/`** - **Modern Tauri version** (v1.0.5) - Latest with modern web UI
 - **`python/`** - **Stable Python version** (v1.0.3) - Production-ready, fully functional
-- **`rust/`** - **Experimental Rust version** - Work in progress, for testing and migration
+- **`rust/`** - **Experimental Rust version** - Command-line interface for testing
 
 > [!NOTE]
-> If you're a user, use the **Python version**. The Rust version is for developers experimenting with a Rust rewrite.
+> **Recommended**: Use the **Tauri version** for the best modern UI experience with PIN-protected settings.
+> For stable desktop app without web technologies, use the **Python version**.
 
 ```
 ApiAi/
+├── tauri-app/       # 🌐 Tauri version (modern, recommended)
+│   ├── src/         # Web frontend (HTML/CSS/JS)
+│   └── src-tauri/   # Rust backend
 ├── python/          # 🐍 Python version (stable)
 │   ├── main.py      # Entry point
 │   ├── gui/         # GUI modules
 │   └── config/      # Configuration
-├── rust/            # 🦀 Rust version (experimental)
+├── rust/            # 🦀 Rust CLI (experimental)
 │   ├── Cargo.toml
 │   └── src/
 ├── docs/            # Documentation
@@ -32,10 +37,28 @@ ApiAi/
 - [Network Ports](docs/PORTS.md)
 
 ### Versions
-- [**Python Version Documentation**](python/README.md)
-- [**Rust Version Documentation**](rust/README.md)
+- [**Tauri Version Documentation**](tauri-app/README.md) - Modern web-based UI
+- [**Python Version Documentation**](python/README.md) - Desktop Qt application
+- [**Rust Version Documentation**](rust/README.md) - CLI experimental
 
-See `python/` directory for detailed setup, build, and logs guides.
+## Quick Start
+
+### Tauri Version (Recommended)
+
+```bash
+cd tauri-app
+npm install
+npm run tauri dev
+```
+
+**Features:**
+- ✨ Modern web UI with gradients and animations
+- 🔒 PIN-protected settings (default PIN: 1234)
+- 🎨 Purple/indigo color scheme
+- 📱 Responsive design
+- 🔓 Double-click developer name in footer to unlock settings
+
+### Python Version (Stable)
 
 #### 2. Install Dependencies
 
@@ -81,11 +104,17 @@ python3 main.py
 ## Configuration
 On first run, the application creates `config_qt.json` automatically in the **project root**.
 
-To configure API keys:
-1. Double-click on developer name in footer
+### Tauri Version
+To configure protected settings:
+1. Click the lock icon (🔒) in sidebar OR double-click "Maksim Kurein" in footer
 2. Enter PIN (default: `1234`)
-3. Open Settings via Menu → PDF Search → Settings
-4. Enter your API keys
+3. Edit Telegram URL, Port, Encryption Key, or API Key
+4. Click lock icon again to lock settings
+
+### Python Version
+To configure API keys:
+1. Open Settings via Menu → PDF Search → Settings
+2. Enter your API keys
 
 ### Supported AI Providers
 - **Anthropic Claude**: Get API key from [console.anthropic.com](https://console.anthropic.com/)
@@ -122,9 +151,11 @@ python scripts/update_version.py bump --type patch
 5. View and save results
 
 ## Security
-- PIN protection for settings access
-- AES-256-GCM encryption for Telegram Bot communication
-- API keys stored locally in `config_qt.json` (git-ignored)
+- 🔒 PIN protection for sensitive settings (Tauri version)
+- 🔐 AES-256-GCM encryption for Telegram Bot communication
+- 🔑 API keys stored locally in `config_qt.json` (git-ignored)
+- ✅ Settings locked by default, unlock only when needed
+- 🎯 App opens directly without PIN screen for better UX
 
 ## License
 Private use
