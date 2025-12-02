@@ -203,7 +203,7 @@ impl Default for AppConfig {
         Self {
             app_info: AppInfo {
                 name: "ApiAi".to_string(),
-                version: "2.1.0".to_string(),
+                version: "2.1.1".to_string(),
                 developer_en: "Maksim Kurein".to_string(),
             },
             api_keys: ApiKeys {
@@ -557,14 +557,28 @@ impl eframe::App for ApiAiApp {
                         self.conversation_id = Some(conv_id);
                     }
                     
+                    // Remove provider information from response text if present
+                    // Filter out lines containing "Provider:" or "(Secure)"
+                    let cleaned_response: String = ai_response
+                        .lines()
+                        .filter(|line| {
+                            let trimmed = line.trim();
+                            !trimmed.starts_with("Provider:") && 
+                            !trimmed.starts_with("provider:") &&
+                            !trimmed.contains("Provider:") &&
+                            !trimmed.contains("(Secure)")
+                        })
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    
                     // Save to conversation history
-                    self.conversation_history.push((user_query.clone(), ai_response.clone()));
+                    self.conversation_history.push((user_query.clone(), cleaned_response.clone()));
                     
                     // Append to response text (keep conversation context)
                     if !self.response_text.is_empty() {
                         self.response_text.push_str("\n\n---\n\n");
                     }
-                    self.response_text.push_str(&format!("👤 You: {}\n\n🤖 AI: {}", user_query, ai_response));
+                    self.response_text.push_str(&format!("👤 You: {}\n\n🤖 AI: {}", user_query, cleaned_response));
                 }
                 Err(error) => {
                     if !self.response_text.is_empty() {
@@ -880,6 +894,23 @@ impl eframe::App for ApiAiApp {
                 ui.add_space(10.0);
                 ui.heading(egui::RichText::new(&self.config.app_info.name).size(18.0).strong().color(egui::Color32::from_rgb(50, 160, 255)));
                 ui.label(egui::RichText::new("AI-powered component analysis and chat assistant").size(11.0).weak());
+                
+                // Provider and model information
+                let provider_info = match self.selected_provider {
+                    Provider::Anthropic => "Anthropic Claude (claude-3-sonnet-20240229)",
+                    Provider::OpenAI => "OpenAI GPT (gpt-4o)",
+                    Provider::Telegram => {
+                        // For Telegram, we don't know the exact model, so just show it's via Telegram
+                        "AI via Telegram Server"
+                    }
+                };
+                ui.add_space(5.0);
+                ui.label(egui::RichText::new(provider_info).size(10.0).weak().color(if self.dark_mode {
+                    egui::Color32::from_rgb(180, 190, 254) // Light lavender in dark mode
+                } else {
+                    egui::Color32::from_rgb(76, 79, 105) // Dark text in light mode
+                }));
+                
                 ui.add_space(10.0);
             });
         });
@@ -1023,49 +1054,31 @@ impl eframe::App for ApiAiApp {
 
         // 4. Response Area (Central) - Fills remaining space
         egui::CentralPanel::default().show(ctx, |ui| {
-<<<<<<< HEAD
-            ui.add_space(5.0);
-            ui.horizontal(|ui| {
-                ui.add_space(20.0);
+            // Remove all padding to maximize space
+            let mut frame = egui::Frame::central_panel(ui.style());
+            frame.inner_margin = egui::Margin::symmetric(20.0, 0.0);
+            
+            frame.show(ui, |ui| {
                 ui.vertical(|ui| {
-                    // Match the width calculation from input panel EXACTLY
+                    // Use the same width as input panel
                     let panel_width = ui.available_width() - 20.0;
                     
                     ui.label(egui::RichText::new("Response:").size(12.0).strong().color(label_color));
+                    ui.add_space(3.0);
                     
-                    // Force TextEdit to fill all remaining space
+                    // Calculate exact rows to fill remaining space
                     let available_height = ui.available_height();
+                    let line_height = ui.text_style_height(&egui::TextStyle::Body);
+                    let rows = ((available_height - 10.0) / line_height).floor() as usize;
                     
-                    ui.add_sized(
-                        [panel_width, available_height],
+                    ui.add(
                         egui::TextEdit::multiline(&mut self.response_text)
+                            .desired_width(panel_width)
+                            .desired_rows(rows.max(15))
                             .font(egui::TextStyle::Body)
                     );
                 });
-                ui.add_space(20.0); // Match right margin from input panel
-=======
-            ui.add_space(20.0);
-            ui.vertical(|ui| {
-                // Use the same width as input panel
-                let panel_width = ui.available_width();
-                
-                ui.label(egui::RichText::new("Response:").size(12.0).strong().color(label_color));
-                ui.add_space(3.0);
-                
-                // Calculate exact rows to fill remaining space
-                let available_height = ui.available_height();
-                let line_height = ui.text_style_height(&egui::TextStyle::Body);
-                let rows = ((available_height - 10.0) / line_height).floor() as usize;
-                
-                ui.add(
-                    egui::TextEdit::multiline(&mut self.response_text)
-                        .desired_width(panel_width)
-                        .desired_rows(rows.max(15))
-                        .font(egui::TextStyle::Body)
-                );
->>>>>>> origin/experimental/rust-refactor
             });
-            ui.add_space(20.0);
         });
         
         // Keyboard shortcuts

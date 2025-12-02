@@ -24,6 +24,25 @@
     </div>
   </div>
 
+  <!-- Window Size Modal -->
+  <div id="window-size-modal" class="pin-modal hidden">
+    <div class="pin-container">
+      <div class="pin-header">
+        <div class="lock-icon">📐</div>
+        <h1>Window Size Settings</h1>
+        <p id="window-size-info">Current size: -</p>
+      </div>
+      <div style="margin: 20px 0;">
+        <p style="color: var(--text-secondary); margin-bottom: 15px;">What would you like to do?</p>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button id="window-size-save" class="primary-btn">Save Current Size</button>
+        <button id="window-size-reset" class="secondary-btn">Reset to Default</button>
+        <button id="window-size-cancel" class="secondary-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Application -->
   <div class="container" id="main-app">
     <!-- Sidebar -->
@@ -92,6 +111,7 @@
         <!-- Messages will appear here -->
         <div class="message system">
           <div class="content">Welcome to ApiAi! Select a provider and start chatting.</div>
+          <div id="provider-info" class="provider-info"></div>
         </div>
       </div>
 
@@ -114,7 +134,11 @@
         </div>
         <div class="footer-item">
           <span class="footer-label">Version:</span>
-          <span class="footer-value">2.1.0</span>
+          <span class="footer-value">2.1.1</span>
+        </div>
+        <div class="footer-item">
+          <span class="footer-label">APP ID:</span>
+          <span class="footer-value">apiai-v2</span>
         </div>
         <div class="footer-item">
           <span class="footer-label">Release:</span>
@@ -122,7 +146,7 @@
         </div>
         <div class="footer-item">
           <span class="footer-label">Window:</span>
-          <span class="footer-value" id="window-size">-</span>
+          <span class="footer-value" id="window-size" title="Double-click to save or reset window size">-</span>
         </div>
       </div>
     </div>

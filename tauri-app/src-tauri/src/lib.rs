@@ -5,7 +5,7 @@ mod api;
 mod encryption;
 
 use api::{ApiClient, AnthropicClient, OpenAIClient, TelegramClient};
-use tauri::State;
+use tauri::{State, Manager};
 use std::sync::Mutex;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -29,6 +29,8 @@ struct ApiKeysConfig {
 #[derive(Clone, Serialize, Deserialize)]
 struct UiConfig {
     theme: String,
+    window_width: Option<f64>,
+    window_height: Option<f64>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -55,6 +57,8 @@ impl Default for AppConfig {
             },
             ui: UiConfig {
                 theme: "dark".to_string(),
+                window_width: None,
+                window_height: None,
             },
         }
     }
@@ -68,6 +72,7 @@ struct AppState {
 struct SearchResponse {
     text: String,
     provider: String,
+    model: Option<String>,
     conversation_id: Option<String>,
 }
 
@@ -135,10 +140,39 @@ async fn perform_search(
         Ok(result) => Ok(SearchResponse {
             text: result.text,
             provider: result.provider,
+            model: result.model,
             conversation_id: result.conversation_id,
         }),
         Err(e) => Err(format!("Error: {}", e)),
     }
+}
+
+#[tauri::command]
+fn save_window_size(width: f64, height: f64, state: State<AppState>) -> Result<(), String> {
+    let mut config = state.config.lock().unwrap();
+    config.ui.window_width = Some(width);
+    config.ui.window_height = Some(height);
+    
+    // Save to file
+    let path = get_config_path();
+    let content = serde_json::to_string_pretty(&*config).map_err(|e| e.to_string())?;
+    fs::write(&path, content).map_err(|e| format!("Failed to write config to {:?}: {}", path, e))?;
+    
+    Ok(())
+}
+
+#[tauri::command]
+fn reset_window_size(state: State<AppState>) -> Result<(), String> {
+    let mut config = state.config.lock().unwrap();
+    config.ui.window_width = None;
+    config.ui.window_height = None;
+    
+    // Save to file
+    let path = get_config_path();
+    let content = serde_json::to_string_pretty(&*config).map_err(|e| e.to_string())?;
+    fs::write(&path, content).map_err(|e| format!("Failed to write config to {:?}: {}", path, e))?;
+    
+    Ok(())
 }
 
 fn get_config_path() -> std::path::PathBuf {
@@ -181,12 +215,26 @@ pub fn run() {
         AppConfig::default()
     };
 
+    let config_clone = config.clone();
+    
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .manage(AppState { config: Mutex::new(config) })
-        .invoke_handler(tauri::generate_handler![perform_search, check_pin, is_pin_required, get_config, save_config])
+        .setup(move |app| {
+            // Set window size on startup if saved in config
+            if let Some(window) = app.get_webview_window("main") {
+                if let Some(width) = config_clone.ui.window_width {
+                    if let Some(height) = config_clone.ui.window_height {
+                        println!("Setting window size on startup: {}x{}", width, height);
+                        let _ = window.set_size(tauri::LogicalSize::new(width, height));
+                    }
+                }
+            }
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![perform_search, check_pin, is_pin_required, get_config, save_config, save_window_size, reset_window_size])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

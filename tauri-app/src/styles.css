@@ -467,6 +467,15 @@ button:active {
   border: 1px solid #ef4444;
 }
 
+.provider-info {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  opacity: 0.8;
+}
+
 .model-info {
   margin-top: 8px;
   padding-top: 8px;
@@ -585,6 +594,19 @@ textarea:focus {
 .footer-value {
   color: var(--accent-color);
   font-weight: 500;
+}
+
+#window-size {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+  user-select: none;
+}
+
+#window-size:hover {
+  background: rgba(99, 102, 241, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Scrollbar */

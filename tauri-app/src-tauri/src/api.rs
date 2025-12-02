@@ -1,6 +1,14 @@
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
+/// Get APP_ID based on major version from Cargo.toml
+/// Example: version "2.1.1" → "apiai-v2"
+fn get_app_id() -> String {
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
+    let major = VERSION.split('.').next().unwrap_or("1");
+    format!("apiai-v{}", major)
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(dead_code)]
 pub struct SearchResult {
@@ -201,7 +209,7 @@ impl TelegramClient {
         if !self.api_key.is_empty() {
             headers.insert("X-API-KEY", reqwest::header::HeaderValue::from_str(&self.api_key)?);
         }
-        headers.insert("X-APP-ID", reqwest::header::HeaderValue::from_static("apiai-v1"));
+        headers.insert("X-APP-ID", reqwest::header::HeaderValue::from_str(&get_app_id())?);
 
         let response = client
             .post(&secure_url)
@@ -243,10 +251,23 @@ impl TelegramClient {
         let model = decrypted_data.get("model")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
+        
+        // Extract real provider from response (e.g., "anthropic", "openai")
+        let real_provider = decrypted_data.get("provider")
+            .and_then(|v| v.as_str())
+            .map(|s| {
+                // Capitalize first letter
+                let mut chars = s.chars();
+                match chars.next() {
+                    None => String::new(),
+                    Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                }
+            })
+            .unwrap_or_else(|| "Anthropic".to_string()); // Default to Anthropic
 
         Ok(SearchResult {
             text: result_text,
-            provider: "Telegram (Secure)".to_string(),
+            provider: real_provider,
             model,
             conversation_id,
             processing_time_ms,
@@ -272,7 +293,7 @@ impl ApiClient for TelegramClient {
         if !self.api_key.is_empty() {
             headers.insert("X-API-KEY", reqwest::header::HeaderValue::from_str(&self.api_key)?);
         }
-        headers.insert("X-APP-ID", reqwest::header::HeaderValue::from_static("apiai-v1"));
+        headers.insert("X-APP-ID", reqwest::header::HeaderValue::from_str(&get_app_id())?);
 
         // Prepare payload
         let mut payload = serde_json::json!({
@@ -306,7 +327,7 @@ impl ApiClient for TelegramClient {
         let text = response.text().await?;
         
         // Try to parse as JSON first
-        let (result_text, conversation_id, processing_time_ms, model) = if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
+        let (result_text, conversation_id, processing_time_ms, model, provider) = if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
             let text_content = if let Some(resp) = json.get("response") {
                 resp.as_str().unwrap_or(&text).to_string()
             } else if let Some(content) = json.get("content") {
@@ -327,14 +348,27 @@ impl ApiClient for TelegramClient {
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string());
             
-            (text_content, conv_id, time_ms, model)
+            // Extract real provider from response
+            let provider = json.get("provider")
+                .and_then(|v| v.as_str())
+                .map(|s| {
+                    // Capitalize first letter
+                    let mut chars = s.chars();
+                    match chars.next() {
+                        None => String::new(),
+                        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                    }
+                })
+                .unwrap_or_else(|| "Anthropic".to_string()); // Default to Anthropic
+            
+            (text_content, conv_id, time_ms, model, provider)
         } else {
-            (text, None, None, None)
+            (text, None, None, None, "Anthropic".to_string())
         };
 
         Ok(SearchResult {
             text: result_text,
-            provider: "Telegram".to_string(),
+            provider,
             model,
             conversation_id,
             processing_time_ms,
