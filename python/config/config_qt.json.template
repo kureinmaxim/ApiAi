@@ -1,11 +1,11 @@
 {
   "app_info": {
     "name": "ApiAi",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "edition": "Standard",
     "description": "ApiAi Application",
-    "release_date": "01.12.2025",
-    "last_updated": "2025-12-01",
+    "release_date": "02.12.2025",
+    "last_updated": "2025-12-02",
     "developer_en": "Kurein M.N."
   },
   "security": {

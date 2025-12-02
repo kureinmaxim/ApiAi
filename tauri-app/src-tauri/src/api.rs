@@ -230,10 +230,15 @@ impl TelegramClient {
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
 
+        let processing_time_ms = decrypted_data.get("processing_time_ms")
+            .and_then(|v| v.as_i64())
+            .map(|v| v as i32);
+
         Ok(SearchResult {
             text: result_text,
             provider: "Telegram (Secure)".to_string(),
             conversation_id,
+            processing_time_ms,
         })
     }
 }

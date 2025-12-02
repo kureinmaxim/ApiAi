@@ -203,7 +203,7 @@ impl Default for AppConfig {
         Self {
             app_info: AppInfo {
                 name: "ApiAi".to_string(),
-                version: "2.0.1".to_string(),
+                version: "2.1.0".to_string(),
                 developer_en: "Maksim Kurein".to_string(),
             },
             api_keys: ApiKeys {
