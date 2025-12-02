@@ -116,11 +116,6 @@ class SearchWidget(QWidget):
         layout.addLayout(search_panel)
         
         # --- Область промпта (складная или всегда видимая) ---
-        prompt_group = QFrame()
-        prompt_group.setFrameShape(QFrame.StyledPanel)
-        prompt_layout = QVBoxLayout(prompt_group)
-        prompt_layout.setContentsMargins(5, 5, 5, 5)
-        
         prompt_header = QHBoxLayout()
         prompt_header.addWidget(QLabel("📝 Промпт:"))
         
@@ -130,18 +125,16 @@ class SearchWidget(QWidget):
         prompt_header.addWidget(self.prompt_type_combo)
         
         prompt_header.addStretch()
-        prompt_layout.addLayout(prompt_header)
+        layout.addLayout(prompt_header)
         
         self.custom_prompt_edit = QTextBrowser() # Используем QTextBrowser для отображения, если стандартный
         self.custom_prompt_edit.setReadOnly(True)
         self.custom_prompt_edit.setMaximumHeight(100)
         self.custom_prompt_edit.setPlaceholderText("Здесь будет отображаться используемый промпт...")
-        prompt_layout.addWidget(self.custom_prompt_edit)
+        layout.addWidget(self.custom_prompt_edit)
         
         # Делаем редактируемым только для пользовательского режима
         self.custom_prompt_edit.setReadOnly(True)
-        
-        layout.addWidget(prompt_group)
         
         # --- Область результатов ---
         self.results_browser = QTextBrowser()
