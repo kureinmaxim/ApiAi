@@ -347,18 +347,97 @@ clearBtn.addEventListener('click', () => {
   chatHistory.innerHTML = '<div class="message system"><div class="content">Chat cleared. Context reset.</div></div>';
 });
 
-// Echo button - inserts text into prompt field
+// Echo button - sends echo test request automatically
 const echoBtn = document.getElementById('echo-btn');
-echoBtn.addEventListener('click', () => {
+echoBtn.addEventListener('click', async () => {
   const currentText = promptInput.value.trim();
-  if (currentText) {
-    // If there's text, insert it again (echo current input)
-    promptInput.value = currentText;
-  } else {
-    // If empty, insert default echo text
-    promptInput.value = 'Echo 123456789';
+  const testMessage = currentText || 'Echo 123456789';
+
+  // Prevented during processing
+  if (isProcessing) return;
+
+  // UI Updates
+  appendMessage(`🔊 Echo Test: ${testMessage}`, 'user');
+  isProcessing = true;
+  echoBtn.disabled = true;
+  echoBtn.textContent = '⏳ Testing...';
+
+  // Measure request start time
+  const startTime = performance.now();
+
+  // Gather Settings
+  const provider = providerSelect.value;
+
+  if (provider !== 'telegram') {
+    appendMessage('❌ Echo test only works with Telegram provider', 'error');
+    isProcessing = false;
+    echoBtn.disabled = false;
+    echoBtn.textContent = '🔊 Echo';
+    return;
   }
-  promptInput.focus();
+
+  const apiKey = document.getElementById('api-key').value;
+  let telegramUrl = null;
+  let encryptionKey = null;
+  let useEnc = false;
+
+  // Get Telegram URL
+  const urlInput = document.getElementById('telegram-url').value;
+  const portInput = document.getElementById('telegram-port').value;
+
+  // Construct URL - replace /ai_query with /echo
+  if (urlInput.includes('://')) {
+    // Full URL provided, replace endpoint
+    telegramUrl = urlInput.replace(/\/ai_query.*$/, '/echo');
+  } else {
+    // Host + port provided
+    telegramUrl = `http://${urlInput}:${portInput}/echo`;
+  }
+
+  if (useEncryption.checked) {
+    useEnc = true;
+    encryptionKey = encryptionKeyInput.value;
+  }
+
+  try {
+    const response = await invoke('perform_search', {
+      query: testMessage,
+      provider,
+      apiKey,
+      telegramUrl,
+      encryptionKey,
+      useEncryption: useEnc,
+      chatMode: false,
+      conversationId: null
+    });
+
+    // Measure round-trip time
+    const endTime = performance.now();
+    const roundTripTime = Math.round(endTime - startTime);
+
+    // Server processing time from response
+    const serverTime = response.processing_time_ms || 0;
+    const networkTime = roundTripTime - serverTime;
+
+    appendMessage(
+      `✅ Echo Response: ${response.text}\n\n` +
+      `📊 Timing:\n` +
+      `• Round-trip: ${roundTripTime}ms\n` +
+      `• Server: ${serverTime}ms\n` +
+      `• Network: ${networkTime}ms`,
+      'ai'
+    );
+
+  } catch (error) {
+    const endTime = performance.now();
+    const roundTripTime = Math.round(endTime - startTime);
+    appendMessage(`❌ Echo Error: ${error}\n⏱️ Time: ${roundTripTime}ms`, 'error');
+  } finally {
+    isProcessing = false;
+    echoBtn.disabled = false;
+    echoBtn.textContent = '🔊 Echo';
+    scrollToBottom();
+  }
 });
 
 

@@ -8,6 +8,8 @@ pub struct SearchResult {
     pub provider: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub conversation_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub processing_time_ms: Option<i32>,
 }
 
 #[async_trait::async_trait]
@@ -71,6 +73,7 @@ impl ApiClient for AnthropicClient {
             text,
             provider: "Anthropic".to_string(),
             conversation_id: None,
+            processing_time_ms: None,
         })
     }
 }
@@ -127,6 +130,7 @@ impl ApiClient for OpenAIClient {
             text,
             provider: "OpenAI".to_string(),
             conversation_id: None,
+            processing_time_ms: None,
         })
     }
 }
@@ -286,7 +290,7 @@ impl ApiClient for TelegramClient {
         let text = response.text().await?;
         
         // Try to parse as JSON first
-        let (result_text, conversation_id) = if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
+        let (result_text, conversation_id, processing_time_ms) = if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
             let text_content = if let Some(resp) = json.get("response") {
                 resp.as_str().unwrap_or(&text).to_string()
             } else if let Some(content) = json.get("content") {
@@ -299,15 +303,20 @@ impl ApiClient for TelegramClient {
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string());
             
-            (text_content, conv_id)
+            let time_ms = json.get("processing_time_ms")
+                .and_then(|v| v.as_i64())
+                .map(|v| v as i32);
+            
+            (text_content, conv_id, time_ms)
         } else {
-            (text, None)
+            (text, None, None)
         };
 
         Ok(SearchResult {
             text: result_text,
             provider: "Telegram".to_string(),
             conversation_id,
+            processing_time_ms,
         })
     }
 }
