@@ -63,15 +63,15 @@
         <label>Port</label>
         <input type="number" id="telegram-port" value="8000" disabled class="protected-field">
 
-        <label><input type="checkbox" id="use-encryption" disabled class="protected-field"> Use Encryption</label>
-        <input type="password" id="encryption-key" placeholder="Encryption Key (Hex/String)"
-          class="hidden protected-field" disabled>
-      </div>
-
-      <div class="settings-group">
         <label>API Key</label>
         <input type="password" id="api-key" placeholder="Enter API Key" disabled class="protected-field">
-        <div class="checkbox-wrapper">
+
+        <label>Encryption Key</label>
+        <input type="password" id="encryption-key" placeholder="Encryption Key (Hex/String)"
+          class="hidden protected-field" disabled>
+
+        <div class="checkbox-row">
+          <label><input type="checkbox" id="use-encryption" disabled class="protected-field"> Use Encryption</label>
           <label><input type="checkbox" id="show-keys"> Show Keys</label>
         </div>
       </div>
@@ -79,6 +79,10 @@
       <div class="settings-actions">
         <button id="save-settings" class="primary-btn small-btn">💾 Save Settings</button>
         <button id="clear-chat" class="secondary-btn small-btn">🗑️ Clear Chat</button>
+      </div>
+
+      <div class="settings-actions">
+        <button id="echo-btn" class="secondary-btn small-btn">🔊 Echo</button>
       </div>
     </div>
 
@@ -110,11 +114,11 @@
         </div>
         <div class="footer-item">
           <span class="footer-label">Version:</span>
-          <span class="footer-value">2.0.1</span>
+          <span class="footer-value">2.1.0</span>
         </div>
         <div class="footer-item">
           <span class="footer-label">Release:</span>
-          <span class="footer-value">01.12.2025</span>
+          <span class="footer-value">02.12.2025</span>
         </div>
         <div class="footer-item">
           <span class="footer-label">Window:</span>

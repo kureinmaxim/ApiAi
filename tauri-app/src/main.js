@@ -347,6 +347,21 @@ clearBtn.addEventListener('click', () => {
   chatHistory.innerHTML = '<div class="message system"><div class="content">Chat cleared. Context reset.</div></div>';
 });
 
+// Echo button - inserts text into prompt field
+const echoBtn = document.getElementById('echo-btn');
+echoBtn.addEventListener('click', () => {
+  const currentText = promptInput.value.trim();
+  if (currentText) {
+    // If there's text, insert it again (echo current input)
+    promptInput.value = currentText;
+  } else {
+    // If empty, insert default echo text
+    promptInput.value = 'Echo 123456789';
+  }
+  promptInput.focus();
+});
+
+
 async function sendMessage() {
   const query = promptInput.value.trim();
   if (!query || isProcessing) return;
