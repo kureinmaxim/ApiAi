@@ -574,7 +574,17 @@ saveSettingsBtn.addEventListener('click', async () => {
 
 clearBtn.addEventListener('click', () => {
   conversationId = null;
-  chatHistory.innerHTML = '<div class="message system"><div class="content">Chat cleared. Context reset.</div></div>';
+  // Restore welcome message with provider info
+  chatHistory.innerHTML = `
+    <div class="message system">
+      <div class="content">Welcome to ApiAi! Select a provider and start chatting.</div>
+      <div id="provider-info" class="provider-info"></div>
+    </div>
+  `;
+  // Update provider info after restoring the element
+  setTimeout(() => {
+    updateProviderInfo();
+  }, 10);
 });
 
 // Echo button - sends echo test request automatically
