@@ -7,6 +7,8 @@ pub struct SearchResult {
     pub text: String,
     pub provider: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub conversation_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub processing_time_ms: Option<i32>,
@@ -72,6 +74,7 @@ impl ApiClient for AnthropicClient {
         Ok(SearchResult {
             text,
             provider: "Anthropic".to_string(),
+            model: Some("claude-3-5-sonnet-20240620".to_string()),
             conversation_id: None,
             processing_time_ms: None,
         })
@@ -129,6 +132,7 @@ impl ApiClient for OpenAIClient {
         Ok(SearchResult {
             text,
             provider: "OpenAI".to_string(),
+            model: Some("gpt-4o".to_string()),
             conversation_id: None,
             processing_time_ms: None,
         })
@@ -184,7 +188,9 @@ impl TelegramClient {
 
         // Construct secure URL
         let base_url = self.url.trim_end_matches('/');
-        let secure_url = if base_url.ends_with("/ai_query") {
+        let secure_url = if base_url.ends_with("/echo") {
+            base_url.to_string()
+        } else if base_url.ends_with("/ai_query") {
             base_url.replace("/ai_query", "/ai_query/secure")
         } else {
             format!("{}/ai_query/secure", base_url)
@@ -234,9 +240,14 @@ impl TelegramClient {
             .and_then(|v| v.as_i64())
             .map(|v| v as i32);
 
+        let model = decrypted_data.get("model")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+
         Ok(SearchResult {
             text: result_text,
             provider: "Telegram (Secure)".to_string(),
+            model,
             conversation_id,
             processing_time_ms,
         })
@@ -295,7 +306,7 @@ impl ApiClient for TelegramClient {
         let text = response.text().await?;
         
         // Try to parse as JSON first
-        let (result_text, conversation_id, processing_time_ms) = if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
+        let (result_text, conversation_id, processing_time_ms, model) = if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
             let text_content = if let Some(resp) = json.get("response") {
                 resp.as_str().unwrap_or(&text).to_string()
             } else if let Some(content) = json.get("content") {
@@ -312,14 +323,19 @@ impl ApiClient for TelegramClient {
                 .and_then(|v| v.as_i64())
                 .map(|v| v as i32);
             
-            (text_content, conv_id, time_ms)
+            let model = json.get("model")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
+            
+            (text_content, conv_id, time_ms, model)
         } else {
-            (text, None, None)
+            (text, None, None, None)
         };
 
         Ok(SearchResult {
             text: result_text,
             provider: "Telegram".to_string(),
+            model,
             conversation_id,
             processing_time_ms,
         })

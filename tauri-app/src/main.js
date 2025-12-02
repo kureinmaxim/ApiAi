@@ -490,7 +490,10 @@ async function sendMessage() {
       conversationId
     });
 
-    appendMessage(response.text, 'ai');
+    appendMessage(response.text, 'ai', {
+      provider: response.provider,
+      model: response.model
+    });
 
     if (response.conversation_id) {
       conversationId = response.conversation_id;
@@ -506,7 +509,7 @@ async function sendMessage() {
   }
 }
 
-function appendMessage(text, type) {
+function appendMessage(text, type, metadata = {}) {
   const div = document.createElement('div');
   div.className = `message ${type}`;
 
@@ -514,7 +517,23 @@ function appendMessage(text, type) {
   const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\n/g, '<br>');
 
-  div.innerHTML = `<div class="content">${formattedText}</div>`;
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'content';
+  contentDiv.innerHTML = formattedText;
+
+  div.appendChild(contentDiv);
+
+  // Add model info for AI responses
+  if (type === 'ai' && (metadata.provider || metadata.model)) {
+    const modelInfo = document.createElement('div');
+    modelInfo.className = 'model-info';
+    const parts = [];
+    if (metadata.provider) parts.push(`Provider: ${metadata.provider}`);
+    if (metadata.model) parts.push(`Model: ${metadata.model}`);
+    modelInfo.textContent = parts.join(' | ');
+    div.appendChild(modelInfo);
+  }
+
   chatHistory.appendChild(div);
   scrollToBottom();
 }

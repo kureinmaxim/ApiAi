@@ -467,6 +467,16 @@ button:active {
   border: 1px solid #ef4444;
 }
 
+.model-info {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  font-family: 'Courier New', monospace;
+}
+
 /* Input Area */
 .input-area {
   padding: 20px;
