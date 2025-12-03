@@ -56,7 +56,6 @@ async function init() {
   updateWindowSize();
   updateProviderInfo();
   setupWindowSizeHandler();
-  setupModeHandler();
 
   try {
     // Load config from backend
