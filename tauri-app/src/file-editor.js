@@ -2,6 +2,15 @@
 // File Editor Mode Functions
 // ============================================================================
 
+// File Editor State
+let fileEditorState = {
+    filePath: null,
+    fileName: null,
+    fileContent: null,
+    fileExtension: null,
+    fileSize: 0
+};
+
 // Setup mode handler
 function setupModeHandler() {
     const radios = document.querySelectorAll('input[name="mode"]');
@@ -72,8 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     fileSize: content.length
                 };
 
-                // Update UI
-                document.getElementById('selected-file-name').textContent = fileName;
+                // Update UI - make file name clickable
+                const fileNameElement = document.getElementById('selected-file-name');
+                fileNameElement.textContent = fileName;
+                fileNameElement.style.cursor = 'pointer';
+                fileNameElement.style.textDecoration = 'underline';
+                fileNameElement.onclick = async () => {
+                    const { open } = window.__TAURI__.shell;
+                    await open(filePath);
+                };
+
                 document.getElementById('selected-file-size').textContent = `${(content.length / 1024).toFixed(2)} KB`;
                 document.getElementById('selected-file-info').classList.remove('hidden');
 
