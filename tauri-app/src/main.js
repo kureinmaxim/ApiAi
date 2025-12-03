@@ -805,10 +805,18 @@ function scrollToBottom() {
   chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
+// Export functions and variables for chat-history.js
+window.appendMessage = appendMessage;
+window.scrollToBottom = scrollToBottom;
+window.currentProviderInfo = currentProviderInfo;
+window.updateProviderInfo = updateProviderInfo;
+window.conversationId = conversationId;
+
 // Initialize on load
 init();
 
 // Export functionality
+
 const exportTxtBtn = document.getElementById('export-txt');
 const exportPdfBtn = document.getElementById('export-pdf');
 const exportDocxBtn = document.getElementById('export-docx');

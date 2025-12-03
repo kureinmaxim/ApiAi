@@ -2,6 +2,11 @@
 // Chat History Persistence - JavaScript Functions
 // ============================================================================
 
+// Get DOM elements
+const getChatHistory = () => document.getElementById('chat-history');
+const getConversationId = () => window.conversationId || null;
+const setConversationId = (id) => { window.conversationId = id; };
+
 // Chat history state
 let chatHistoryMetadata = {
     provider: null,
@@ -37,6 +42,7 @@ async function ensureChatHistoryDir() {
 
 // Get current chat data
 function getCurrentChatData() {
+    const chatHistory = getChatHistory();
     const messages = Array.from(chatHistory.querySelectorAll('.message:not(.system):not(.error)'));
 
     const chatMessages = messages.map(msg => {
@@ -68,7 +74,7 @@ function getCurrentChatData() {
             last_modified: now,
             provider: chatHistoryMetadata.provider,
             model: chatHistoryMetadata.model,
-            conversation_id: conversationId,
+            conversation_id: getConversationId(),
             chat_mode: document.getElementById('chat-mode').checked,
             encryption_used: chatHistoryMetadata.encryption_used,
             message_count: chatMessages.length
@@ -156,6 +162,8 @@ async function loadChatHistory() {
 
 // Restore chat from data
 function restoreChatFromData(chatData) {
+    const chatHistory = getChatHistory();
+
     // Clear current chat
     chatHistory.innerHTML = '';
 
@@ -170,28 +178,34 @@ function restoreChatFromData(chatData) {
     };
 
     // Restore conversation ID
-    conversationId = chatData.metadata.conversation_id;
+    setConversationId(chatData.metadata.conversation_id);
 
     // Restore chat mode
     document.getElementById('chat-mode').checked = chatData.metadata.chat_mode;
 
     // Restore messages
     chatData.messages.forEach(msg => {
-        appendMessage(msg.content, msg.role, {
-            provider: msg.provider,
-            model: msg.model,
-            timestamp: msg.timestamp
-        });
+        if (window.appendMessage) {
+            window.appendMessage(msg.content, msg.role, {
+                provider: msg.provider,
+                model: msg.model,
+                timestamp: msg.timestamp
+            });
+        }
     });
 
     // Update provider info
-    if (chatData.metadata.provider && chatData.metadata.model) {
-        currentProviderInfo.provider = chatData.metadata.provider;
-        currentProviderInfo.model = chatData.metadata.model;
-        updateProviderInfo();
+    if (chatData.metadata.provider && chatData.metadata.model && window.currentProviderInfo) {
+        window.currentProviderInfo.provider = chatData.metadata.provider;
+        window.currentProviderInfo.model = chatData.metadata.model;
+        if (window.updateProviderInfo) {
+            window.updateProviderInfo();
+        }
     }
 
-    scrollToBottom();
+    if (window.scrollToBottom) {
+        window.scrollToBottom();
+    }
 }
 
 // Show chat library
@@ -306,6 +320,7 @@ async function exportToMarkdown() {
         const { save } = window.__TAURI__.dialog;
         const { writeTextFile } = window.__TAURI__.fs;
 
+        const chatHistory = getChatHistory();
         const messages = Array.from(chatHistory.querySelectorAll('.message:not(.system):not(.error)'));
 
         if (messages.length === 0) {
@@ -322,8 +337,9 @@ async function exportToMarkdown() {
         if (chatHistoryMetadata.model) {
             markdown += `**Model:** ${chatHistoryMetadata.model}\n`;
         }
-        if (conversationId) {
-            markdown += `**Conversation ID:** ${conversationId}\n`;
+        const convId = getConversationId();
+        if (convId) {
+            markdown += `**Conversation ID:** ${convId}\n`;
         }
 
         markdown += '\n---\n\n';
@@ -425,7 +441,7 @@ function setupMessageTracking() {
         });
     });
 
-    const chatHistory = document.getElementById('chat-history');
+    const chatHistory = getChatHistory();
     observer.observe(chatHistory, { childList: true });
 }
 
