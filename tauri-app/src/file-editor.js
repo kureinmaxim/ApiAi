@@ -53,11 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const { readTextFile } = window.__TAURI__.fs;
 
             const filePath = await open({
-                multiple: false,
-                filters: [{
-                    name: 'All Files',
-                    extensions: ['*']
-                }]
+                multiple: false
+                // No filters - allow all files
             });
 
             if (filePath) {
