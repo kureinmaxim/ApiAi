@@ -41,12 +41,22 @@ const protectedFields = document.querySelectorAll('.protected-field');
 let isProcessing = false;
 let settingsUnlocked = false;
 
+// File Editor State
+let fileEditorState = {
+  filePath: null,
+  fileName: null,
+  fileContent: null,
+  fileExtension: null,
+  fileSize: 0
+};
+
 // Initialize
 async function init() {
   // App opens directly, settings are locked by default
   updateWindowSize();
   updateProviderInfo();
   setupWindowSizeHandler();
+  setupModeHandler();
 
   try {
     // Load config from backend
@@ -692,12 +702,22 @@ async function sendMessage() {
   const query = promptInput.value.trim();
   if (!query || isProcessing) return;
 
+  // Check if File Editor mode is active
+  const mode = document.querySelector('input[name="mode"]:checked')?.value;
+  if (mode === 'file-editor') {
+    if (window.handleFileEditorMode) {
+      await window.handleFileEditorMode(query);
+    }
+    return;
+  }
+
   // UI Updates
   appendMessage(query, 'user');
   promptInput.value = '';
   isProcessing = true;
   sendBtn.disabled = true;
   sendBtn.textContent = '...';
+
 
   // Gather Settings
   const provider = providerSelect.value;

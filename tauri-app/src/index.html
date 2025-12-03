@@ -8,6 +8,7 @@
   <title>ApiAi</title>
   <script type="module" src="/main.js" defer></script>
   <script type="module" src="/chat-history.js" defer></script>
+  <script type="module" src="/file-editor.js" defer></script>
 
 </head>
 
@@ -91,11 +92,26 @@
         <div class="radio-group">
           <label><input type="radio" name="mode" value="chat" checked> General Chat</label>
           <label><input type="radio" name="mode" value="component"> Component Analysis</label>
+          <label><input type="radio" name="mode" value="file-editor"> 📝 File Editor</label>
         </div>
       </div>
 
       <div class="settings-group">
         <label><input type="checkbox" id="chat-mode" checked> Chat Mode (Context)</label>
+      </div>
+
+      <!-- File Editor Settings -->
+      <div class="settings-group" id="file-editor-settings" style="display: none;">
+        <label>File Selection</label>
+        <button id="select-file-btn" class="secondary-btn small-btn">📁 Select File</button>
+        <div id="selected-file-info" class="file-info hidden">
+          <span class="file-name" id="selected-file-name"></span>
+          <span class="file-size" id="selected-file-size"></span>
+        </div>
+        <div id="file-preview" class="file-preview hidden">
+          <label>Content Preview</label>
+          <div id="file-content-preview"></div>
+        </div>
       </div>
 
       <div class="settings-group">

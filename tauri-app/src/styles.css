@@ -629,6 +629,55 @@ textarea:focus {
   background: var(--accent-color);
 }
 
+/* File Editor Styles */
+.file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 6px;
+}
+
+.file-name {
+  color: var(--accent-color);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.file-size {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.file-preview {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.file-preview label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+#file-content-preview {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-color);
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
 /* Chat Library Modal */
 .library-container {
   background: rgba(21, 27, 46, 0.95);
