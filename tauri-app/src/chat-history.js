@@ -416,9 +416,8 @@ function setupLibrarySearch() {
 // Open chat history folder
 async function openChatHistoryFolder() {
     try {
-        const { open } = window.__TAURI__.shell;
         const dir = await ensureChatHistoryDir();
-        await open(dir);
+        await window.__TAURI__.opener.open(dir);
     } catch (error) {
         console.error('Failed to open folder:', error);
         alert('Failed to open folder: ' + error);

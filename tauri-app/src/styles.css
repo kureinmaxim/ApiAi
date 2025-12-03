@@ -67,6 +67,7 @@ body {
   box-shadow: var(--shadow-lg);
   text-align: center;
   min-width: 320px;
+  max-width: 500px;
   animation: slideUp 0.4s ease-out;
 }
 
@@ -557,21 +558,22 @@ textarea:focus {
 /* Footer */
 .footer {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  padding: 8px 16px;
   background: rgba(15, 20, 34, 0.8);
   border-top: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
-  font-size: 12px;
+  font-size: 11px;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px 20px;
 }
 
 .footer-item {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
+  white-space: nowrap;
 }
 
 #developer-name {
@@ -630,6 +632,18 @@ textarea:focus {
 }
 
 /* File Editor Styles */
+.file-formats-hint {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.file-formats-hint small {
+  color: var(--text-secondary);
+  font-size: 10px;
+  opacity: 0.7;
+  font-style: italic;
+}
+
 .file-info {
   display: flex;
   flex-direction: column;

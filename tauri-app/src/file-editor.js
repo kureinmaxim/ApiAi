@@ -62,8 +62,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const { readTextFile } = window.__TAURI__.fs;
 
             const filePath = await open({
-                multiple: false
-                // No filters - allow all files
+                multiple: false,
+                filters: [
+                    {
+                        name: 'Text Files',
+                        extensions: ['txt', 'md', 'json', 'js', 'ts', 'jsx', 'tsx', 'py', 'rs', 'go', 'java', 'cpp', 'c', 'h', 'hpp', 'css', 'html', 'xml', 'yaml', 'yml', 'toml', 'ini', 'conf', 'sh', 'bash', 'zsh', 'fish', 'ps1', 'bat', 'cmd']
+                    },
+                    {
+                        name: 'Code Files',
+                        extensions: ['js', 'ts', 'jsx', 'tsx', 'py', 'rs', 'go', 'java', 'cpp', 'c', 'h', 'hpp', 'cs', 'php', 'rb', 'swift', 'kt', 'scala', 'clj', 'hs', 'ml', 'fs', 'vb', 'sql', 'r', 'm', 'mm']
+                    },
+                    {
+                        name: 'Markup & Config',
+                        extensions: ['html', 'xml', 'json', 'yaml', 'yml', 'toml', 'ini', 'conf', 'cfg', 'env', 'properties']
+                    },
+                    {
+                        name: 'All Files',
+                        extensions: ['*']
+                    }
+                ]
             });
 
             if (filePath) {
@@ -87,8 +104,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 fileNameElement.style.cursor = 'pointer';
                 fileNameElement.style.textDecoration = 'underline';
                 fileNameElement.onclick = async () => {
-                    const { open } = window.__TAURI__.shell;
-                    await open(filePath);
+                    try {
+                        // Use opener plugin (Tauri v2) - open file with default system app
+                        // Try to open the file directly first
+                        if (window.__TAURI__?.opener) {
+                            try {
+                                await window.__TAURI__.opener.open(filePath);
+                                return; // Success
+                            } catch (fileError) {
+                                console.log('Direct file open failed, trying folder:', fileError);
+                                // If direct file open fails, try opening the folder containing the file
+                                const pathParts = filePath.split('/');
+                                pathParts.pop(); // Remove filename
+                                const folderPath = pathParts.join('/');
+                                if (folderPath) {
+                                    await window.__TAURI__.opener.open(folderPath);
+                                    return; // Success
+                                }
+                                throw fileError; // Re-throw if folder open also fails
+                            }
+                        } else {
+                            throw new Error('Opener plugin not available');
+                        }
+                    } catch (e) {
+                        console.error('Failed to open file:', e);
+                        // Fallback: show file path so user can open manually
+                        const { message } = window.__TAURI__.dialog;
+                        await message(`Could not open file automatically.\n\nFile path:\n${filePath}\n\nYou can copy this path and open it manually.`, {
+                            title: 'File Location',
+                            type: 'info',
+                            okLabel: 'OK'
+                        });
+                    }
                 };
 
                 document.getElementById('selected-file-size').textContent = `${(content.length / 1024).toFixed(2)} KB`;

@@ -9,6 +9,7 @@
   <script type="module" src="/main.js" defer></script>
   <script type="module" src="/chat-history.js" defer></script>
   <script type="module" src="/file-editor.js" defer></script>
+  <script type="module" src="/provider-settings.js" defer></script>
 
 </head>
 
@@ -42,6 +43,47 @@
         <button id="window-size-save" class="primary-btn">Save Current Size</button>
         <button id="window-size-reset" class="secondary-btn">Reset to Default</button>
         <button id="window-size-cancel" class="secondary-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Provider Settings Modal -->
+  <div id="provider-settings-modal" class="pin-modal hidden">
+    <div class="pin-container">
+      <div class="pin-header">
+        <div class="lock-icon">⚙️</div>
+        <h1>Provider Settings</h1>
+        <p>Configure your AI provider connection</p>
+      </div>
+
+      <div class="settings-group">
+        <label>Telegram URL</label>
+        <input type="text" id="modal-telegram-url" placeholder="localhost or IP address" />
+      </div>
+
+      <div class="settings-group">
+        <label>Port</label>
+        <input type="text" id="modal-telegram-port" placeholder="8000" />
+      </div>
+
+      <div class="settings-group">
+        <label>API Key</label>
+        <input type="password" id="modal-api-key" placeholder="Enter API Key" />
+      </div>
+
+      <div class="settings-group">
+        <label>Encryption Key</label>
+        <input type="password" id="modal-encryption-key" placeholder="Enter Encryption Key" />
+      </div>
+
+      <div class="settings-group">
+        <label><input type="checkbox" id="modal-use-encryption"> Use Encryption</label>
+        <label><input type="checkbox" id="modal-show-keys"> Show Keys</label>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button id="save-provider-settings" class="primary-btn">💾 Save Settings</button>
+        <button id="cancel-provider-settings" class="secondary-btn">Cancel</button>
       </div>
     </div>
   </div>
@@ -105,6 +147,9 @@
         <label>File Selection</label>
         <button id="select-file-btn" class="secondary-btn small-btn" disabled style="opacity: 0.5;">📁 Select
           File</button>
+        <div class="file-formats-hint">
+          <small>📄 Supported formats: .txt, .md, .json, .js, .ts, .py, .rs, .go, .html, .css, .xml, .yaml, .toml, .ini, .sh, and more</small>
+        </div>
         <div id="selected-file-info" class="file-info hidden">
           <span class="file-name" id="selected-file-name"></span>
           <span class="file-size" id="selected-file-size"></span>
@@ -124,28 +169,19 @@
         </select>
       </div>
 
-      <div class="settings-group" id="telegram-settings">
-        <label>Telegram URL</label>
-        <input type="text" id="telegram-url" value="localhost" disabled class="protected-field">
-
-        <label>Port</label>
-        <input type="number" id="telegram-port" value="8000" disabled class="protected-field">
-
-        <label>API Key</label>
-        <input type="password" id="api-key" placeholder="Enter API Key" disabled class="protected-field">
-
-        <label>Encryption Key</label>
-        <input type="password" id="encryption-key" placeholder="Encryption Key (Hex/String)"
-          class="hidden protected-field" disabled>
-
-        <div class="checkbox-row">
-          <label><input type="checkbox" id="use-encryption" disabled class="protected-field"> Use Encryption</label>
-          <label><input type="checkbox" id="show-keys"> Show Keys</label>
-        </div>
+      <div class="settings-group">
+        <button id="open-provider-settings" class="primary-btn small-btn">⚙️ Settings</button>
       </div>
 
+      <!-- Hidden fields to store settings -->
+      <input type="hidden" id="telegram-url" />
+      <input type="hidden" id="telegram-port" />
+      <input type="hidden" id="api-key" />
+      <input type="hidden" id="encryption-key" />
+      <input type="hidden" id="use-encryption" />
+      <input type="hidden" id="show-keys" />
+
       <div class="settings-actions">
-        <button id="save-settings" class="primary-btn small-btn">💾 Save Settings</button>
         <button id="clear-chat" class="secondary-btn small-btn">🗑️ Clear Chat</button>
       </div>
 

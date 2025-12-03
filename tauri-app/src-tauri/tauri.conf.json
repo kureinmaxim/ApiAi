@@ -11,10 +11,9 @@
     "windows": [
       {
         "title": "ApiAi",
-        "width": 1200,
-        "height": 900
+        "width": 1250,
+        "height": 1000
       }
-
     ],
     "security": {
       "csp": null,
@@ -33,7 +32,8 @@
             "dialog:allow-ask",
             "dialog:default",
             "fs:allow-write-text-file",
-            "fs:default"
+            "fs:default",
+            "opener:default"
           ]
         }
       ]

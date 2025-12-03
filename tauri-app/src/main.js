@@ -39,7 +39,8 @@ const protectedFields = document.querySelectorAll('.protected-field');
 
 // State
 let isProcessing = false;
-let settingsUnlocked = false;
+// Use window.settingsUnlocked so it's accessible from other scripts
+window.settingsUnlocked = false;
 
 // File Editor State
 let fileEditorState = {
@@ -53,9 +54,13 @@ let fileEditorState = {
 // Initialize
 async function init() {
   // App opens directly, settings are locked by default
-  updateWindowSize();
   updateProviderInfo();
   setupWindowSizeHandler();
+
+  // Update window size after a short delay to ensure window is fully initialized
+  setTimeout(() => {
+    updateWindowSize();
+  }, 200);
 
   try {
     // Load config from backend
@@ -74,7 +79,7 @@ async function init() {
         // Wait a bit for window to resize, then update display
         setTimeout(() => {
           updateWindowSize();
-        }, 100);
+        }, 300);
       } catch (error) {
         console.error('Failed to restore window size:', error);
       }
@@ -129,6 +134,10 @@ async function init() {
   }
 
   promptInput.focus();
+
+  // Aggressively update window size to ensure it displays
+  setTimeout(updateWindowSize, 500);
+  setTimeout(updateWindowSize, 1000);
 }
 
 function updateApiKeyField() {
@@ -180,12 +189,15 @@ function showPinModal() {
   }, 200);
 }
 
+// Export showPinModal to window for use in other scripts
+window.showPinModal = showPinModal;
+
 function hidePinModal() {
   pinModal.classList.add('hidden');
 }
 
 function unlockSettings() {
-  settingsUnlocked = true;
+  window.settingsUnlocked = true;
   protectedFields.forEach(field => {
     field.disabled = false;
     field.classList.remove('protected-field');
@@ -198,7 +210,7 @@ function unlockSettings() {
 }
 
 function lockSettings() {
-  settingsUnlocked = false;
+  window.settingsUnlocked = false;
   protectedFields.forEach(field => {
     field.disabled = true;
     field.classList.add('protected-field');
@@ -232,6 +244,10 @@ pinInput.addEventListener('keydown', (e) => {
 function checkPin(pin) {
   if (pin === CORRECT_PIN) {
     unlockSettings();
+    if (window.pinSuccessCallback) {
+      window.pinSuccessCallback();
+      window.pinSuccessCallback = null;
+    }
   } else {
     pinError.classList.remove('hidden');
     pinInput.value = '';
@@ -244,9 +260,10 @@ function checkPin(pin) {
 
 // Lock indicator click
 lockIndicator.addEventListener('click', () => {
-  if (settingsUnlocked) {
+  if (window.settingsUnlocked) {
     lockSettings();
   } else {
+    window.pinSuccessCallback = null; // Clear any pending callback
     showPinModal();
   }
 });
@@ -265,7 +282,8 @@ developerName.addEventListener('click', () => {
   } else if (clickCount === 2) {
     clearTimeout(clickTimer);
     clickCount = 0;
-    if (!settingsUnlocked) {
+    if (!window.settingsUnlocked) {
+      window.pinSuccessCallback = null; // Clear any pending callback
       showPinModal();
     }
   }
@@ -277,7 +295,22 @@ pinCancel.addEventListener('click', hidePinModal);
 // Window Size
 async function updateWindowSize() {
   try {
+    // Get element each time to ensure it exists
+    const windowSizeElement = document.getElementById('window-size');
+    if (!windowSizeElement) {
+      console.warn('Window size element not found');
+      // Retry after a short delay
+      setTimeout(updateWindowSize, 100);
+      return;
+    }
+
     const currentWindow = getCurrentWindow();
+    if (!currentWindow) {
+      console.warn('Current window not available');
+      setTimeout(updateWindowSize, 100);
+      return;
+    }
+
     const physicalSize = await currentWindow.innerSize();
     const scaleFactor = await currentWindow.scaleFactor();
 
@@ -285,9 +318,22 @@ async function updateWindowSize() {
     const logicalWidth = Math.round(physicalSize.width / scaleFactor);
     const logicalHeight = Math.round(physicalSize.height / scaleFactor);
 
-    windowSizeDisplay.textContent = `${logicalWidth}×${logicalHeight}`;
+    if (logicalWidth > 0 && logicalHeight > 0) {
+      windowSizeElement.textContent = `${logicalWidth}×${logicalHeight}`;
+    } else {
+      // Retry if size is invalid
+      console.log('Invalid window size, retrying...');
+      setTimeout(updateWindowSize, 500);
+    }
   } catch (error) {
-    windowSizeDisplay.textContent = '-';
+    console.error('Failed to update window size:', error);
+    // Retry after error
+    setTimeout(() => {
+      const windowSizeElement = document.getElementById('window-size');
+      if (windowSizeElement && windowSizeElement.textContent === '-') {
+        updateWindowSize();
+      }
+    }, 500);
   }
 }
 
