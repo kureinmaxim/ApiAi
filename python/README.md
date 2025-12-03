@@ -1,63 +1,102 @@
 # ApiAi - Python Version
 
-This is the **stable production version** of ApiAi, written in Python with PySide6.
+Python scripts and utilities for project management.
 
-## Quick Start
+![Version](https://img.shields.io/badge/version-2.1.1-blue)
+![Python](https://img.shields.io/badge/Python-3.8+-green)
 
-### Prerequisites
-- Python 3.8+
-- pip
+## 🎯 Purpose
 
-### Installation
+Python version serves as **development utilities**:
+- ✅ Version management scripts (`scripts/update_version.py`)
+- ✅ Build automation (future)
+- ✅ CI/CD tools (future)
+- ⚠️ Legacy GUI application (stable, but deprecated in favor of Tauri)
 
-1. **Navigate to python directory:**
-   ```bash
-   cd python
-   ```
+## 🚀 Quick Start
 
-2. **Create virtual environment:**
-   
-   **Windows:**
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate
-   ```
-   
-   **macOS/Linux:**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+### Run GUI Application
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+cd python
+python3 -m venv venv
+source venv/bin/activate  # Linux/macOS
+# or: venv\Scripts\activate  # Windows
 
-4. **Run application:**
-   ```bash
-   python main.py
-   ```
+pip install -r requirements.txt
+python main.py
+```
 
-## Configuration
+### Use Version Management Scripts
 
-On first run, `config_qt.json` will be created automatically in the **project root** (one level up).
+```bash
+# From rust/ directory (required!)
+cd ../rust
 
-To configure API keys:
-1. Double-click developer name in footer
-2. Enter PIN (default: `1234`)
-3. Open Settings → API Keys
-4. Enter your keys
+# Check version
+make version-status
 
-## Documentation
+# Bump version
+make version-bump-patch
 
-- [Setup Guide](SETUP.md) - Detailed installation instructions
-- [Build Guide](BUILD.md) - Creating installers and releases
-- [Logs Guide](LOGS_GUIDE.md) - Understanding application logs
-- [AI Integration Guide](docs/AI_INTEGRATION_GUIDE.md)
-- [API Management](docs/API_MANAGEMENT.md)
-- [Offline Installation](docs/OFFLINE_INSTALLATION_GUIDE.md)
+# Sync all files
+make version-sync
+```
 
-## Support
+See [VERSION_MANAGEMENT.md](../VERSION_MANAGEMENT.md) for details.
 
-See main [README.md](../README.md) for full documentation.
+## 📚 Documentation
+
+Complete documentation is in the project root:
+
+- **[BUILD.md](../BUILD.md)** - Build and run instructions
+- **[VERSION_MANAGEMENT.md](../VERSION_MANAGEMENT.md)** - Version management
+- **[CLEANUP.md](../CLEANUP.md)** - Cleanup build artifacts
+- **[README.md](../README.md)** - Main project README
+
+## 📦 Dependencies
+
+Main dependencies (`requirements.txt`):
+- **PySide6** - Qt GUI framework
+- **requests** - HTTP client
+- **cryptography** - Encryption support
+
+Optional (for export features):
+- **python-docx** - Word export
+- **reportlab** - PDF export
+
+## 🔧 Scripts
+
+### Version Management
+```bash
+# All commands from python/
+python scripts/update_version.py status
+python scripts/update_version.py bump --type patch
+python scripts/update_version.py sync
+```
+
+### Font Download (if missing)
+```bash
+python scripts/download_fonts.py
+```
+
+## ⚙️ Configuration
+
+Uses shared `config_qt.json` in project root (created automatically on first run).
+
+See main [README.md](../README.md) for configuration details.
+
+## 📝 Version
+
+Current version: **2.1.1** (synced with all project components)
+
+---
+
+**Note:** For modern GUI experience, use the **Tauri version** instead:
+```bash
+cd ../tauri-app
+npm run tauri dev
+```
+
+**Developer:** Maksim Kurein  
+**Documentation:** See [../README.md](../README.md)

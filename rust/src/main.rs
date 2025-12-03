@@ -1,8 +1,8 @@
 // ApiAi - Rust implementation
 // Main entry point with egui GUI
 
-mod api;
-mod encryption;
+// Use shared library for API and encryption
+use apiai_shared::{ApiClient, AnthropicClient, OpenAIClient, TelegramClient};
 
 use eframe::egui;
 use egui_extras::install_image_loaders;
@@ -203,7 +203,7 @@ impl Default for AppConfig {
         Self {
             app_info: AppInfo {
                 name: "ApiAi".to_string(),
-                version: "2.1.1".to_string(),
+                version: "2.2.0".to_string(),
                 developer_en: "Maksim Kurein".to_string(),
             },
             api_keys: ApiKeys {
@@ -416,10 +416,10 @@ impl ApiAiApp {
         let conversation_id = self.conversation_id.clone();
         
         // Create the appropriate client
-        let client: Box<dyn api::ApiClient> = match self.selected_provider {
-            Provider::Anthropic => Box::new(api::AnthropicClient::new(api_key)),
-            Provider::OpenAI => Box::new(api::OpenAIClient::new(api_key)),
-            Provider::Telegram => Box::new(api::TelegramClient::new(telegram_url, api_key, encryption_key, use_encryption, chat_mode, conversation_id)),
+        let client: Box<dyn ApiClient> = match self.selected_provider {
+            Provider::Anthropic => Box::new(AnthropicClient::new(api_key)),
+            Provider::OpenAI => Box::new(OpenAIClient::new(api_key)),
+            Provider::Telegram => Box::new(TelegramClient::new(telegram_url, api_key, encryption_key, use_encryption, chat_mode, conversation_id)),
         };
         
         // Spawn async task

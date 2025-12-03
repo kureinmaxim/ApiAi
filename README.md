@@ -19,14 +19,17 @@ ApiAi/
 ├── tauri-app/       # 🌐 Tauri version (modern, recommended)
 │   ├── src/         # Web frontend (HTML/CSS/JS)
 │   └── src-tauri/   # Rust backend
-├── python/          # 🐍 Python version (stable)
+├── python/          # 🐍 Python version (stable, v2.1.1)
 │   ├── main.py      # Entry point
 │   ├── gui/         # GUI modules
 │   └── config/      # Configuration
 ├── rust/            # 🦀 Rust CLI (experimental)
 │   ├── Cargo.toml
 │   └── src/
+├── shared-rs/       # 📦 Shared Rust library (NEW!)
+│   └── src/         # Common API & encryption code
 ├── docs/            # Documentation
+├── Makefile         # Project management commands
 └── README.md        # This file
 ```
 
@@ -142,6 +145,30 @@ Use the python script directly:
 python scripts/update_version.py status
 python scripts/update_version.py bump --type patch
 ```
+
+## Project Cleanup
+
+The project build artifacts can take up **8.4+ GB**. Use cleanup commands to free space:
+
+### Quick Cleanup (Recommended)
+```bash
+# Clean all build artifacts (~8.4GB freed)
+make clean-all
+
+# Or clean specific directories:
+make clean-rust      # Clean rust/target (~3GB)
+make clean-tauri     # Clean tauri-app/src-tauri/target (~5.4GB)
+make clean-python    # Remove virtual environments (~2.4GB)
+```
+
+### Check Size
+```bash
+make size            # Show project size breakdown
+```
+
+> [!TIP]
+> Build artifacts are automatically recreated when you run `cargo build` or `npm run tauri dev`.
+> It's safe to clean them regularly.
 
 ## Usage
 1. Launch the application

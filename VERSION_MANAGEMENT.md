@@ -7,12 +7,15 @@
 ## 🎯 Общий принцип
 
 ApiAi использует **единую версию** для всех компонентов:
+- **shared-rs** - общая библиотека (NEW!)
 - Tauri приложение
 - Python приложение  
 - Rust CLI
 - Конфигурационные файлы
 
 Версия хранится в `config_qt.json` и автоматически синхронизируется во все необходимые файлы.
+
+> **Текущая версия:** `2.1.1` (синхронизировано 03.12.2025)
 
 ---
 
@@ -51,10 +54,11 @@ make version-status
 
 **Вывод:**
 ```
-Current version: 1.0.5
+Current version: 2.1.1
 Files to sync:
   ✓ config_qt.json
   ✓ python/config/config_qt.json.template
+  ✓ shared-rs/Cargo.toml
   ✓ rust/Cargo.toml
   ✓ tauri-app/src-tauri/Cargo.toml
 ```
@@ -69,17 +73,17 @@ make version-sync
 
 ### Увеличить версию
 
-**Patch (1.0.5 → 1.0.6):**
+**Patch (2.1.1 → 2.1.2):**
 ```bash
 make version-bump-patch
 ```
 
-**Minor (1.0.5 → 1.1.0):**
+**Minor (2.1.1 → 2.2.0):**
 ```bash
 make version-bump-minor
 ```
 
-**Major (1.0.5 → 2.0.0):**
+**Major (2.1.1 → 3.0.0):**
 ```bash
 make version-bump-major
 ```
@@ -87,12 +91,12 @@ make version-bump-major
 ### Установить конкретную версию
 
 ```bash
-make version-set v=1.2.3
+make version-set v=X.Y.Z
 ```
 
 **Пример:**
 ```bash
-make version-set v=2.0.0
+make version-set v=2.1.2
 ```
 
 ---
@@ -105,7 +109,7 @@ make version-set v=2.0.0
 ```json
 {
   "app_info": {
-    "version": "1.0.5"
+    "version": "2.1.1"
   }
 }
 ```
@@ -114,33 +118,40 @@ make version-set v=2.0.0
 ```json
 {
   "app_info": {
-    "version": "1.0.5"
+    "version": "2.1.1"
   }
 }
 ```
 
-### 3. **rust/Cargo.toml**
+### 3. **shared-rs/Cargo.toml** (NEW!)
 ```toml
 [package]
-version = "1.0.5"
+name = "apiai-shared"
+version = "2.1.1"
 ```
 
-### 4. **tauri-app/src-tauri/Cargo.toml**
+### 4. **rust/Cargo.toml**
 ```toml
 [package]
-version = "1.0.5"
+version = "2.1.1"
 ```
 
-### 5. **tauri-app/src-tauri/tauri.conf.json**
+### 5. **tauri-app/src-tauri/Cargo.toml**
+```toml
+[package]
+version = "2.1.1"
+```
+
+### 6. **tauri-app/src-tauri/tauri.conf.json**
 ```json
 {
-  "version": "1.0.5"
+  "version": "2.1.1"
 }
 ```
 
-### 6. **tauri-app/src/index.html**
+### 7. **tauri-app/src/index.html**
 ```html
-<span class="footer-value">1.0.5</span>
+<span class="footer-value">2.1.1</span>
 ```
 
 ---
@@ -153,6 +164,7 @@ version = "1.0.5"
 config_qt.json (источник истины)
      │
      ├─→ python/config/config_qt.json.template
+     ├─→ shared-rs/Cargo.toml (NEW!)
      ├─→ rust/Cargo.toml
      └─→ tauri-app/src-tauri/Cargo.toml
          ├─→ tauri-app/src-tauri/tauri.conf.json
@@ -180,10 +192,10 @@ make version-status
 
 # 2. Увеличить patch версию
 make version-bump-patch
-# 1.0.5 → 1.0.6
+# 2.1.1 → 2.1.2
 
 # 3. Проверить изменения
-git diff config_qt.json rust/Cargo.toml
+git diff config_qt.json shared-rs/Cargo.toml rust/Cargo.toml
 ```
 
 ### Новая функция
@@ -193,7 +205,7 @@ cd rust
 
 # Увеличить minor версию
 make version-bump-minor
-# 1.0.5 → 1.1.0
+# 2.1.1 → 2.2.0
 ```
 
 ### Крупное обновление
@@ -203,7 +215,7 @@ cd rust
 
 # Увеличить major версию
 make version-bump-major
-# 1.0.5 → 2.0.0
+# 2.1.1 → 3.0.0
 ```
 
 ### Откат на конкретную версию
@@ -212,7 +224,7 @@ make version-bump-major
 cd rust
 
 # Установить нужную версию
-make version-set v=1.0.4
+make version-set v=2.1.0
 ```
 
 ### Ручное редактирование config_qt.json
@@ -394,9 +406,16 @@ python scripts/update_version.py bump --type patch
 
 ## 📊 История версий
 
-### Текущая версия: 1.0.5
+### Текущая версия: 2.1.1
 
 **Changelog:**
+- **2.1.1** (03.12.2025)
+  - Создана общая библиотека `shared-rs`
+  - Устранено дублирование кода (774 строки)
+  - Синхронизирована версия Python (с 1.0.3 до 2.1.1)
+  - Добавлены команды очистки (`make clean-all`)
+  - Обновлен .gitignore для target/ папок
+  
 - **1.0.5** (2025-12-01)
   - Tauri UI модернизация
   - PIN защита настроек
@@ -410,9 +429,9 @@ python scripts/update_version.py bump --type patch
 
 ### Планируемые версии
 
-- **1.0.6** - Мелкие исправления
-- **1.1.0** - Новые функции
-- **2.0.0** - Крупное обновление API
+- **2.1.2** - Мелкие исправления
+- **2.2.0** - Новые функции
+- **3.0.0** - Крупное обновление API
 
 ---
 
@@ -423,16 +442,28 @@ python scripts/update_version.py bump --type patch
 
 make version-status         # Проверить версию
 make version-sync           # Синхронизировать файлы
-make version-bump-patch     # 1.0.5 → 1.0.6
-make version-bump-minor     # 1.0.5 → 1.1.0
-make version-bump-major     # 1.0.5 → 2.0.0
+make version-bump-patch     # 2.1.1 → 2.1.2
+make version-bump-minor     # 2.1.1 → 2.2.0
+make version-bump-major     # 2.1.1 → 3.0.0
 make version-set v=X.Y.Z    # Установить конкретную версию
 ```
+
+---
+
+## 📦 Компоненты проекта
+
+Все компоненты на версии **2.1.1**:
+
+- `shared-rs/Cargo.toml` → 2.1.1 (общая библиотека)
+- `rust/Cargo.toml` → 2.1.1 (CLI версия)
+- `tauri-app/src-tauri/Cargo.toml` → 2.1.1 (GUI версия)
+- `python/config/config_qt.json.template` → 2.1.1 (Python версия)
+- `config_qt.json` → 2.1.1 (главный конфиг)
 
 ---
 
 ## 👨‍💻 Разработчик
 
 **Maksim Kurein**  
-Текущая версия: **1.0.5**  
-Дата релиза: **2025-12-01**
+Текущая версия: **2.1.1**  
+Дата релиза: **03.12.2025**

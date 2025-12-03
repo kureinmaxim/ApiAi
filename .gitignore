@@ -59,4 +59,10 @@ run_app.bat
 # Rust
 rust/target/
 rust/Cargo.lock
+tauri-app/src-tauri/target/
+tauri-app/src-tauri/Cargo.lock
 *.bak
+
+# Node.js
+node_modules/
+package-lock.json

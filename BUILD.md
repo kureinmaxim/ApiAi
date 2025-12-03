@@ -159,6 +159,8 @@ type %APPDATA%\ApiAi\logs\app.log
 
 ## 🦀 Rust CLI Version
 
+> **Note:** Rust CLI использует общую библиотеку `shared-rs` для API и шифрования.
+
 ### Требования
 - Rust (latest stable) ([rustup.rs](https://rustup.rs))
 
@@ -249,23 +251,34 @@ cargo run 2>&1 | tee logs/app.log
 Из папки `rust/`:
 ```bash
 make version-status        # Текущая версия
-make version-bump-patch    # 1.0.5 → 1.0.6
-make version-bump-minor    # 1.0.5 → 1.1.0
+make version-bump-patch    # 2.1.1 → 2.1.2
+make version-bump-minor    # 2.1.1 → 2.2.0
 ```
 
 Это обновит версии во всех файлах:
 - `config_qt.json`
 - `python/config/config_qt.json.template`
+- `shared-rs/Cargo.toml` (NEW!)
 - `rust/Cargo.toml`
 - `tauri-app/src-tauri/Cargo.toml`
 
 ### Очистка артефактов
 
+**Быстрая очистка (рекомендуется):**
+```bash
+# Из корня проекта
+make clean-all      # Удалить все build artifacts (~8.4GB)
+make clean-rust     # Удалить rust/target (~3GB)
+make clean-tauri    # Удалить tauri-app/src-tauri/target (~5.4GB)
+make size          # Проверить размер проекта
+```
+
+**Или вручную:**
+
 **Tauri:**
 ```bash
-cd tauri-app
-rm -rf node_modules src-tauri/target
-npm install
+cd tauri-app/src-tauri
+cargo clean
 ```
 
 **Rust CLI:**
@@ -277,8 +290,16 @@ cargo clean
 **Python:**
 ```bash
 cd python
-rm -rf build dist __pycache__ *.spec
+rm -rf build dist __pycache__ *.spec venv
 ```
+
+**Shared library:**
+```bash
+cd shared-rs
+cargo clean
+```
+
+Подробнее см. [CLEANUP.md](CLEANUP.md)
 
 ---
 
@@ -434,5 +455,13 @@ cargo doc --open
 4. Проверьте версии инструментов
 
 **Разработчик:** Maksim Kurein  
-**Версия:** 1.0.5  
-**Дата релиза:** 2025-12-01
+**Версия:** 2.1.1  
+**Дата релиза:** 03.12.2025
+
+## 📦 Компоненты проекта
+
+Все компоненты на единой версии **2.1.1**:
+- `shared-rs` - общая библиотека (API и шифрование)
+- `rust` - CLI версия
+- `tauri-app` - GUI версия
+- `python` - Python версия

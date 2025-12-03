@@ -6,25 +6,67 @@
 
 ```
 ApiAi/
+├── shared-rs/             # 📦 Общая библиотека (NEW!)
 ├── tauri-app/             # 🌐 Tauri версия (современная, рекомендуемая)
-├── python/                # 🐍 Python версия (стабильная)
+├── python/                # 🐍 Python версия (dev utilities)
 ├── rust/                  # 🦀 Rust CLI (экспериментальная)
 ├── docs/                  # 📚 Документация проекта
 │   ├── CHEAT_SHEET.md     # Шпаргалка команд
 │   ├── ENCRYPTION.md      # Протокол шифрования
+│   ├── KEYS_MANAGEMENT.md # Управление ключами API
 │   ├── PORTS.md           # Сетевые порты
 │   └── PROJECT_STRUCTURE.md  # Этот файл
 ├── BUILD.md               # 🔨 Инструкции по сборке
+├── CLEANUP.md             # 🧹 Инструкции по очистке (NEW!)
 ├── VERSION_MANAGEMENT.md  # 📦 Управление версиями
 ├── README.md              # 📄 Главная документация
+├── Makefile               # 🛠 Команды управления проектом
 └── config_qt.json         # ⚙️ Общий конфиг (gitignored)
 ```
+
+---
+
+## 📦 Общая библиотека (`shared-rs/`)
+
+**NEW!** Общая Rust библиотека для устранения дублирования кода.
+
+### 📂 Структура
+
+```
+shared-rs/
+├── src/
+│   ├── lib.rs            # Экспорт модулей
+│   ├── api.rs            # API клиенты (Anthropic, OpenAI, Telegram)
+│   └── encryption.rs     # AES-256-GCM шифрование
+├── Cargo.toml            # Манифест библиотеки
+└── README.md             # Документация
+```
+
+### 🎯 Назначение
+
+**Используется в:**
+- `rust/` - Rust CLI версия
+- `tauri-app/src-tauri/` - Tauri backend
+
+**Содержит:**
+- `ApiClient` trait - общий интерфейс для всех провайдеров
+- `AnthropicClient` - Anthropic Claude API
+- `OpenAIClient` - OpenAI GPT API
+- `TelegramClient` - Telegram bot API с шифрованием
+- `SecureMessenger` - AES-256-GCM криптография
+
+**Преимущества:**
+- ✅ Устранено дублирование 774 строк кода
+- ✅ Единый источник для API и шифрования
+- ✅ Упрощенное тестирование и поддержка
 
 ---
 
 ## 🌐 Tauri версия (`tauri-app/`)
 
 Современная версия с веб-интерфейсом и Rust бэкендом.
+
+> **Note:** Использует `shared-rs` для API клиентов и шифрования.
 
 ### 📂 Структура
 
@@ -37,9 +79,8 @@ tauri-app/
 ├── src-tauri/             # Backend (Rust)
 │   ├── src/
 │   │   ├── main.rs        # Точка входа Tauri
-│   │   ├── lib.rs         # Библиотечный код
-│   │   └── api.rs         # API клиент
-│   ├── Cargo.toml         # Rust зависимости
+│   │   └── lib.rs         # Библиотечный код (использует shared-rs)
+│   ├── Cargo.toml         # Rust зависимости (включая shared-rs)
 │   └── tauri.conf.json    # Конфигурация Tauri
 ├── package.json           # Node.js зависимости
 └── README.md              # Документация Tauri версии
@@ -73,10 +114,10 @@ tauri-app/
   - Инициализация Tauri приложения
   - Регистрация команд
   
-- **`src-tauri/src/api.rs`**
-  - HTTP клиент для AI провайдеров
-  - Шифрование для Telegram
-  - Обработка запросов/ответов
+- **`src-tauri/src/lib.rs`**
+  - Tauri команды (perform_search, check_pin, etc.)
+  - Импортирует API клиенты из `shared-rs`
+  - Управление конфигурацией и состоянием
 
 ---
 
@@ -84,17 +125,17 @@ tauri-app/
 
 Экспериментальная командная строка версия.
 
+> **Note:** Использует `shared-rs` для API клиентов и шифрования.
+
 ### 📂 Структура
 
 ```
 rust/
 ├── src/
-│   ├── main.rs            # Точка входа (CLI)
-│   ├── api.rs             # API клиент
-│   └── encryption.rs      # Модуль шифрования
-├── Cargo.toml             # Манифест проекта
+│   └── main.rs            # Точка входа (egui GUI, использует shared-rs)
+├── Cargo.toml             # Манифест проекта (включая shared-rs)
 ├── Cargo.lock             # Фиксация версий зависимостей
-├── Makefile               # Команды управления
+├── Makefile               # Команды управления версиями
 └── README.md              # Документация Rust версии
 ```
 
@@ -119,24 +160,22 @@ rust/
 #### Исходный код
 
 - **`src/main.rs`**
-  - Точка входа в CLI приложение
-  - Парсинг аргументов командной строки
-  - Инициализация API клиента
-
-- **`src/api.rs`**
-  - HTTP клиент для AI провайдеров
-  - Поддержка Telegram, Anthropic, OpenAI
-  - Шифрование данных (AES-GCM)
-
-- **`src/encryption.rs`**
-  - Модуль шифрования/дешифрования
-  - AES-256-GCM алгоритм
+  - egui GUI приложение (экспериментальное)
+  - Импортирует API клиенты из `shared-rs`
+  - Настройки и управление состоянием
 
 ---
 
 ## 🐍 Python версия (`python/`)
 
-Стабильная десктопная версия с PyQt6 GUI.
+**Назначение:** Development utilities и скрипты автоматизации.
+
+**Основное использование:**
+- ✅ Скрипты управления версиями (`scripts/update_version.py`)
+- ✅ Утилиты автоматизации сборки (future)
+- ⚠️ Legacy GUI приложение (стабильное, но устарело в пользу Tauri)
+
+**Рекомендация:** Для современного GUI используйте **Tauri версию**.
 
 См. [python/README.md](../python/README.md) для подробной документации.
 
@@ -152,7 +191,7 @@ rust/
 {
   "app_info": {
     "name": "ApiAi",
-    "version": "1.0.5",
+    "version": "2.1.1",
     "developer_en": "Maksim Kurein"
   },
   "api_keys": {
@@ -206,11 +245,55 @@ rust/
 
 ## 📦 Артефакты сборки
 
+### Shared Library
+- `shared-rs/target/` - Скомпилированная библиотека
+
 ### Tauri
-- `tauri-app/src-tauri/target/` - Скомпилированные файлы
+- `tauri-app/src-tauri/target/` - Скомпилированные файлы (~5.4GB)
 
 ### Rust CLI
 - `rust/target/debug/` - Debug сборка
-- `rust/target/release/` - Release сборка (оптимизированная)
+- `rust/target/release/` - Release сборка (оптимизированная) (~3GB)
 
-**Примечание:** Папки `target/` находятся в `.gitignore` из-за большого размера.
+**Примечание:** Папки `target/` находятся в `.gitignore` из-за большого размера (общий размер ~8.4GB).
+
+**Очистка:** Используйте `make clean-all` для освобождения места. См. [CLEANUP.md](../CLEANUP.md)
+
+---
+
+## 🏗 Архитектура кода
+
+### Общая схема
+
+```
+┌─────────────────────────────────────────┐
+│         shared-rs (библиотека)          │
+│  ┌────────────────────────────────────┐ │
+│  │ API Clients:                       │ │
+│  │  - AnthropicClient                 │ │
+│  │  - OpenAIClient                    │ │
+│  │  - TelegramClient                  │ │
+│  │ Encryption: SecureMessenger        │ │
+│  └────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+           ▲                    ▲
+           │                    │
+    ┌──────┴──────┐      ┌─────┴──────┐
+    │   rust/     │      │ tauri-app/ │
+    │ (CLI/egui)  │      │  (modern)  │
+    └─────────────┘      └────────────┘
+```
+
+### Устранение дублирования
+
+**До (v1.0.5):**
+- `rust/src/api.rs` (311 строк)
+- `tauri-app/src-tauri/src/api.rs` (311 строк) ❌ ДУБЛИКАТ
+- `rust/src/encryption.rs` (76 строк)
+- `tauri-app/src-tauri/src/encryption.rs` (76 строк) ❌ ДУБЛИКАТ
+
+**После (v2.1.1):**
+- `shared-rs/src/api.rs` (311 строк) ✅ ЕДИНЫЙ ИСТОЧНИК
+- `shared-rs/src/encryption.rs` (76 строк) ✅ ЕДИНЫЙ ИСТОЧНИК
+
+**Экономия:** 774 строки кода, упрощенная поддержка

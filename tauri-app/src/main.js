@@ -142,7 +142,7 @@ function showPinModal() {
   pinModal.classList.remove('hidden');
   pinInput.value = '';
   pinError.classList.add('hidden');
-  
+
   // Force focus with requestAnimationFrame for better reliability
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
@@ -154,7 +154,7 @@ function showPinModal() {
       }
     });
   });
-  
+
   // Additional fallback attempts
   setTimeout(() => {
     if (pinInput && document.activeElement !== pinInput) {
@@ -162,7 +162,7 @@ function showPinModal() {
       pinInput.select();
     }
   }, 50);
-  
+
   setTimeout(() => {
     if (pinInput && document.activeElement !== pinInput) {
       pinInput.focus();
@@ -271,11 +271,11 @@ async function updateWindowSize() {
     const currentWindow = getCurrentWindow();
     const physicalSize = await currentWindow.innerSize();
     const scaleFactor = await currentWindow.scaleFactor();
-    
+
     // Convert to logical size for display
     const logicalWidth = Math.round(physicalSize.width / scaleFactor);
     const logicalHeight = Math.round(physicalSize.height / scaleFactor);
-    
+
     windowSizeDisplay.textContent = `${logicalWidth}×${logicalHeight}`;
   } catch (error) {
     windowSizeDisplay.textContent = '-';
@@ -296,7 +296,7 @@ function setupWindowSizeHandler() {
     document.addEventListener('DOMContentLoaded', setupWindowSizeHandler);
     return;
   }
-  
+
   const windowSizeElement = document.getElementById('window-size');
   if (!windowSizeElement) {
     console.warn('Window size element not found, retrying...');
@@ -305,7 +305,7 @@ function setupWindowSizeHandler() {
   }
 
   console.log('Setting up window size handler on element:', windowSizeElement);
-  
+
   let windowSizeClickCount = 0;
   let windowSizeClickTimer = null;
 
@@ -313,22 +313,22 @@ function setupWindowSizeHandler() {
   const handleDoubleClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     console.log('Double-click detected on window size');
-    
+
     try {
       const currentWindow = getCurrentWindow();
       const physicalSize = await currentWindow.innerSize();
       const scaleFactor = await currentWindow.scaleFactor();
-      
+
       // Convert physical size to logical size (divide by scale factor)
       const logicalWidth = physicalSize.width / scaleFactor;
       const logicalHeight = physicalSize.height / scaleFactor;
-      
+
       // Show modal with current size (display physical size, but save logical)
       windowSizeInfo.textContent = `Current size: ${Math.round(logicalWidth)}×${Math.round(logicalHeight)}`;
       windowSizeModal.classList.remove('hidden');
-      
+
       // Store logical size for use in button handlers
       windowSizeModal.dataset.width = logicalWidth;
       windowSizeModal.dataset.height = logicalHeight;
@@ -337,25 +337,25 @@ function setupWindowSizeHandler() {
       alert('Error: ' + error);
     }
   };
-  
+
   // Window size modal handlers
   windowSizeSave.addEventListener('click', async () => {
     const width = parseFloat(windowSizeModal.dataset.width);
     const height = parseFloat(windowSizeModal.dataset.height);
-    
+
     try {
       await invoke('save_window_size', {
         width: width,
         height: height
       });
-      
+
       windowSizeModal.classList.add('hidden');
-      
+
       // Visual feedback
       const originalText = windowSizeElement.textContent;
       windowSizeElement.textContent = '✅ Saved!';
       windowSizeElement.style.color = '#4ade80';
-      
+
       setTimeout(() => {
         windowSizeElement.textContent = originalText;
         windowSizeElement.style.color = '';
@@ -365,21 +365,21 @@ function setupWindowSizeHandler() {
       alert('Error: ' + error);
     }
   });
-  
+
   windowSizeReset.addEventListener('click', async () => {
     try {
       await invoke('reset_window_size');
-      
+
       const currentWindow = getCurrentWindow();
-        await currentWindow.setSize({ width: 1200, height: 800 });
-      
+      await currentWindow.setSize({ width: 1200, height: 800 });
+
       windowSizeModal.classList.add('hidden');
-      
+
       // Visual feedback
       const originalText = windowSizeElement.textContent;
       windowSizeElement.textContent = '↺ Reset!';
       windowSizeElement.style.color = '#fbbf24';
-      
+
       setTimeout(() => {
         windowSizeElement.textContent = originalText;
         windowSizeElement.style.color = '';
@@ -390,18 +390,18 @@ function setupWindowSizeHandler() {
       alert('Error: ' + error);
     }
   });
-  
+
   windowSizeCancel.addEventListener('click', () => {
     windowSizeModal.classList.add('hidden');
   });
 
   // Use dblclick event directly
   windowSizeElement.addEventListener('dblclick', handleDoubleClick);
-  
+
   // Also add click handler as fallback (for better compatibility)
   windowSizeElement.addEventListener('click', (e) => {
     windowSizeClickCount++;
-    
+
     if (windowSizeClickCount === 1) {
       windowSizeClickTimer = setTimeout(() => {
         windowSizeClickCount = 0;
@@ -413,7 +413,7 @@ function setupWindowSizeHandler() {
       handleDoubleClick(e);
     }
   });
-  
+
   console.log('Window size handler setup complete');
 }
 
@@ -431,11 +431,11 @@ function updateProviderInfo() {
     setTimeout(updateProviderInfo, 100);
     return;
   }
-  
+
   const provider = providerSelect.value;
-  
+
   let infoText = '';
-  
+
   // For Telegram, use info from API response if available
   if (provider === 'telegram' && currentProviderInfo.provider && currentProviderInfo.model) {
     infoText = `${currentProviderInfo.provider} (${currentProviderInfo.model})`;
@@ -444,7 +444,7 @@ function updateProviderInfo() {
     infoText = 'AI via Telegram Server';
   } else {
     // Direct providers
-    switch(provider) {
+    switch (provider) {
       case 'anthropic':
         infoText = 'Anthropic Claude (claude-3-sonnet-20240229)';
         break;
@@ -455,7 +455,7 @@ function updateProviderInfo() {
         infoText = '';
     }
   }
-  
+
   providerInfo.textContent = infoText;
 }
 
@@ -574,6 +574,13 @@ saveSettingsBtn.addEventListener('click', async () => {
 
 clearBtn.addEventListener('click', () => {
   conversationId = null;
+
+  // Reset provider info to default state
+  currentProviderInfo = {
+    provider: null,
+    model: null
+  };
+
   // Restore welcome message with provider info
   chatHistory.innerHTML = `
     <div class="message system">
@@ -735,13 +742,13 @@ async function sendMessage() {
       .split('\n')
       .filter(line => {
         const trimmed = line.trim();
-        return !trimmed.startsWith('Provider:') && 
-               !trimmed.startsWith('provider:') &&
-               !trimmed.includes('Provider:') &&
-               !trimmed.includes('(Secure)');
+        return !trimmed.startsWith('Provider:') &&
+          !trimmed.startsWith('provider:') &&
+          !trimmed.includes('Provider:') &&
+          !trimmed.includes('(Secure)');
       })
       .join('\n');
-    
+
     appendMessage(cleanedText, 'ai', {
       provider: response.provider,
       model: response.model

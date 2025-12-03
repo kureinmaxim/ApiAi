@@ -2,7 +2,7 @@
 ; Создает Windows инсталлятор
 
 #define MyAppName "ApiAi"
-#define MyAppVersion "2.1.1"
+#define MyAppVersion "2.2.0"
 #define MyAppPublisher "Kurein M.N."
 #define MyAppURL "https://github.com/kureinmaxim/ApiAi"
 #define MyAppExeName "run_app.bat"

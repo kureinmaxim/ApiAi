@@ -1,10 +1,8 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
+// Use shared library for API and encryption
+use apiai_shared::{ApiClient, AnthropicClient, OpenAIClient, TelegramClient};
 
-mod api;
-mod encryption;
-
-use api::{ApiClient, AnthropicClient, OpenAIClient, TelegramClient};
 use tauri::{State, Manager};
 use std::sync::Mutex;
 use serde::{Deserialize, Serialize};

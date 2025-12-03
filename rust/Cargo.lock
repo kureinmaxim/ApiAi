@@ -226,19 +226,32 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
 name = "apiai"
+version = "2.2.0"
+dependencies = [
+ "anyhow",
+ "apiai-shared",
+ "config",
+ "dirs",
+ "eframe",
+ "egui",
+ "egui_extras",
+ "mockito",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "apiai-shared"
 version = "2.1.1"
 dependencies = [
  "aes-gcm",
  "anyhow",
  "async-trait",
  "base64 0.21.7",
- "config",
- "dirs",
- "eframe",
- "egui",
- "egui_extras",
  "hex",
- "mockito",
  "rand 0.8.5",
  "reqwest",
  "serde",
@@ -246,8 +259,6 @@ dependencies = [
  "sha2",
  "thiserror 1.0.69",
  "tokio",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

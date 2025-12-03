@@ -1,24 +1,22 @@
 [package]
 name = "apiai"
-version = "2.1.1"
+version = "2.2.0"
 edition = "2021"
 
 [dependencies]
+# Shared library (contains API clients and encryption)
+apiai-shared = { path = "../shared-rs" }
+
 # GUI framework
 eframe = "0.29"
 egui = "0.29"
 egui_extras = "0.29"
 
-# Async runtime
+# App-level dependencies (used by main.rs logic)
 tokio = { version = "1.0", features = ["full"] }
-
-# HTTP client
-reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
-async-trait = "0.1"
-
-# Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+anyhow = "1.0"
 
 # Configuration
 config = "0.13"
@@ -27,17 +25,6 @@ dirs = "5.0"
 # Logging
 tracing = "0.1"
 tracing-subscriber = "0.3"
-
-# Error handling
-anyhow = "1.0"
-thiserror = "1.0"
-
-# Encryption
-aes-gcm = "0.10"
-base64 = "0.21"
-rand = "0.8"
-sha2 = "0.10"
-hex = "0.4"
 
 [dev-dependencies]
 mockito = "1.5"
