@@ -7,6 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ApiAi</title>
   <script type="module" src="/main.js" defer></script>
+  <script type="module" src="/chat-history.js" defer></script>
+
 </head>
 
 <body>
@@ -43,7 +45,37 @@
     </div>
   </div>
 
+  <!-- Chat Library Modal -->
+  <div id="chat-library-modal" class="pin-modal hidden">
+    <div class="library-container">
+      <div class="library-header">
+        <h1>📚 Chat Library</h1>
+        <button id="library-close" class="close-btn">✕</button>
+      </div>
+
+      <div class="library-search">
+        <input type="text" id="library-search-input" placeholder="🔍 Search chats...">
+        <select id="library-filter">
+          <option value="all">All Chats</option>
+          <option value="telegram">Telegram</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="openai">OpenAI</option>
+        </select>
+      </div>
+
+      <div id="library-list" class="library-list">
+        <!-- Chat items will be populated here -->
+      </div>
+
+      <div class="library-footer">
+        <button id="library-refresh" class="secondary-btn">🔄 Refresh</button>
+        <button id="library-open-folder" class="secondary-btn">📁 Open Folder</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Application -->
+
   <div class="container" id="main-app">
     <!-- Sidebar -->
     <div class="sidebar">
@@ -120,11 +152,18 @@
         <button id="send-btn">Send 🚀</button>
       </div>
 
+      <!-- Export Area -->
       <div class="export-area">
+        <button id="save-chat" class="export-btn" title="Save Chat History">💾 Save</button>
+        <button id="load-chat" class="export-btn" title="Load Chat History">📂 Load</button>
+        <button id="chat-library" class="export-btn" title="Chat Library">📚 Library</button>
+        <button id="import-chat" class="export-btn" title="Import from TXT/MD">📥 Import</button>
         <button id="export-txt" class="export-btn" title="Export as Text">📄 TXT</button>
+        <button id="export-md" class="export-btn" title="Export as Markdown">📝 MD</button>
         <button id="export-pdf" class="export-btn" title="Export as PDF">📕 PDF</button>
         <button id="export-docx" class="export-btn" title="Export as Word">📘 DOCX</button>
       </div>
+
 
       <!-- Footer -->
       <div class="footer">

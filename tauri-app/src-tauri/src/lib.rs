@@ -173,7 +173,219 @@ fn reset_window_size(state: State<AppState>) -> Result<(), String> {
     Ok(())
 }
 
+// ============================================================================
+// Chat History Persistence
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ChatMessage {
+    role: String, // "user" or "assistant"
+    content: String,
+    timestamp: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    provider: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    model: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ChatMetadata {
+    created_at: String,
+    last_modified: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    provider: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    model: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    conversation_id: Option<String>,
+    chat_mode: bool,
+    encryption_used: bool,
+    message_count: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ChatHistory {
+    version: String,
+    metadata: ChatMetadata,
+    messages: Vec<ChatMessage>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct SavedChatInfo {
+    filename: String,
+    path: String,
+    metadata: ChatMetadata,
+    preview: String, // First user message
+}
+
+#[tauri::command]
+fn save_chat_history(
+    chat_data: ChatHistory,
+    file_path: String,
+) -> Result<(), String> {
+    let content = serde_json::to_string_pretty(&chat_data)
+        .map_err(|e| format!("Failed to serialize chat history: {}", e))?;
+    
+    fs::write(&file_path, content)
+        .map_err(|e| format!("Failed to write chat history to {:?}: {}", file_path, e))?;
+    
+    Ok(())
+}
+
+#[tauri::command]
+fn load_chat_history(file_path: String) -> Result<ChatHistory, String> {
+    let content = fs::read_to_string(&file_path)
+        .map_err(|e| format!("Failed to read chat history from {:?}: {}", file_path, e))?;
+    
+    let chat_history: ChatHistory = serde_json::from_str(&content)
+        .map_err(|e| format!("Failed to parse chat history: {}", e))?;
+    
+    Ok(chat_history)
+}
+
+#[tauri::command]
+fn list_saved_chats(directory: String) -> Result<Vec<SavedChatInfo>, String> {
+    let dir_path = std::path::Path::new(&directory);
+    
+    if !dir_path.exists() {
+        return Ok(Vec::new());
+    }
+    
+    let mut chats = Vec::new();
+    
+    let entries = fs::read_dir(dir_path)
+        .map_err(|e| format!("Failed to read directory {:?}: {}", directory, e))?;
+    
+    for entry in entries {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            
+            // Only process .json files
+            if path.extension().and_then(|s| s.to_str()) == Some("json") {
+                if let Ok(content) = fs::read_to_string(&path) {
+                    if let Ok(chat_history) = serde_json::from_str::<ChatHistory>(&content) {
+                        // Get preview from first user message
+                        let preview = chat_history.messages
+                            .iter()
+                            .find(|m| m.role == "user")
+                            .map(|m| {
+                                let content = &m.content;
+                                if content.len() > 100 {
+                                    format!("{}...", &content[..100])
+                                } else {
+                                    content.clone()
+                                }
+                            })
+                            .unwrap_or_else(|| "Empty chat".to_string());
+                        
+                        chats.push(SavedChatInfo {
+                            filename: entry.file_name().to_string_lossy().to_string(),
+                            path: path.to_string_lossy().to_string(),
+                            metadata: chat_history.metadata,
+                            preview,
+                        });
+                    }
+                }
+            }
+        }
+    }
+    
+    // Sort by last_modified (newest first)
+    chats.sort_by(|a, b| b.metadata.last_modified.cmp(&a.metadata.last_modified));
+    
+    Ok(chats)
+}
+
+#[tauri::command]
+fn import_text_chat(file_path: String) -> Result<ChatHistory, String> {
+    let content = fs::read_to_string(&file_path)
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+    
+    let mut messages = Vec::new();
+    let lines: Vec<&str> = content.lines().collect();
+    
+    let mut current_role: Option<String> = None;
+    let mut current_content = String::new();
+    
+    for line in lines {
+        let trimmed = line.trim();
+        
+        // Detect role markers
+        if trimmed.starts_with("User:") || trimmed.starts_with("USER:") {
+            // Save previous message if exists
+            if let Some(role) = current_role.take() {
+                if !current_content.trim().is_empty() {
+                    messages.push(ChatMessage {
+                        role,
+                        content: current_content.trim().to_string(),
+                        timestamp: chrono::Local::now().to_rfc3339(),
+                        provider: None,
+                        model: None,
+                    });
+                }
+            }
+            current_role = Some("user".to_string());
+            current_content = trimmed.strip_prefix("User:").or_else(|| trimmed.strip_prefix("USER:"))
+                .unwrap_or("").trim().to_string();
+        } else if trimmed.starts_with("AI:") || trimmed.starts_with("Assistant:") || trimmed.starts_with("ASSISTANT:") {
+            // Save previous message if exists
+            if let Some(role) = current_role.take() {
+                if !current_content.trim().is_empty() {
+                    messages.push(ChatMessage {
+                        role,
+                        content: current_content.trim().to_string(),
+                        timestamp: chrono::Local::now().to_rfc3339(),
+                        provider: None,
+                        model: None,
+                    });
+                }
+            }
+            current_role = Some("assistant".to_string());
+            current_content = trimmed.strip_prefix("AI:").or_else(|| trimmed.strip_prefix("Assistant:"))
+                .or_else(|| trimmed.strip_prefix("ASSISTANT:"))
+                .unwrap_or("").trim().to_string();
+        } else if !trimmed.is_empty() && !trimmed.starts_with("=") && !trimmed.starts_with("-") && !trimmed.starts_with("Exported:") {
+            // Continue current message
+            if !current_content.is_empty() {
+                current_content.push('\n');
+            }
+            current_content.push_str(trimmed);
+        }
+    }
+    
+    // Save last message
+    if let Some(role) = current_role {
+        if !current_content.trim().is_empty() {
+            messages.push(ChatMessage {
+                role,
+                content: current_content.trim().to_string(),
+                timestamp: chrono::Local::now().to_rfc3339(),
+                provider: None,
+                model: None,
+            });
+        }
+    }
+    
+    let now = chrono::Local::now().to_rfc3339();
+    
+    Ok(ChatHistory {
+        version: "1.0".to_string(),
+        metadata: ChatMetadata {
+            created_at: now.clone(),
+            last_modified: now,
+            provider: None,
+            model: None,
+            conversation_id: None,
+            chat_mode: false,
+            encryption_used: false,
+            message_count: messages.len(),
+        },
+        messages,
+    })
+}
+
 fn get_config_path() -> std::path::PathBuf {
+
     // 1. Check if config exists in current directory (Project root in dev)
     let current_dir_config = std::path::Path::new("config_qt.json");
     if current_dir_config.exists() {
@@ -232,7 +444,19 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![perform_search, check_pin, is_pin_required, get_config, save_config, save_window_size, reset_window_size])
+        .invoke_handler(tauri::generate_handler![
+            perform_search, 
+            check_pin, 
+            is_pin_required, 
+            get_config, 
+            save_config, 
+            save_window_size, 
+            reset_window_size,
+            save_chat_history,
+            load_chat_history,
+            list_saved_chats,
+            import_text_chat
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

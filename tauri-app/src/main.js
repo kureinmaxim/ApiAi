@@ -759,6 +759,11 @@ async function sendMessage() {
       currentProviderInfo.provider = response.provider;
       currentProviderInfo.model = response.model;
       updateProviderInfo();
+
+      // Track metadata for chat history
+      if (window.trackAIMetadata) {
+        window.trackAIMetadata(response.provider, response.model);
+      }
     }
 
     if (response.conversation_id) {
@@ -766,6 +771,7 @@ async function sendMessage() {
     }
 
   } catch (error) {
+
     appendMessage(`Error: ${error}`, 'error');
   } finally {
     isProcessing = false;
