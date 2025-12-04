@@ -75,13 +75,15 @@ tauri-app/
 ├── src/                    # Frontend (Web)
 │   ├── index.html         # HTML структура
 │   ├── styles.css         # Стили с градиентами
-│   └── main.js            # JavaScript логика
+│   ├── main.js            # JavaScript логика
+│   ├── provider-settings.js  # Provider Settings modal (NEW!)
+│   └── file-editor.js     # File Editor mode (NEW!)
 ├── src-tauri/             # Backend (Rust)
 │   ├── src/
 │   │   ├── main.rs        # Точка входа Tauri
 │   │   └── lib.rs         # Библиотечный код (использует shared-rs)
 │   ├── Cargo.toml         # Rust зависимости (включая shared-rs)
-│   └── tauri.conf.json    # Конфигурация Tauri
+│   └── tauri.conf.json    # Конфигурация Tauri + fs permissions
 ├── package.json           # Node.js зависимости
 └── README.md              # Документация Tauri версии
 ```
@@ -92,21 +94,35 @@ tauri-app/
 
 - **`src/index.html`**
   - PIN модальное окно для защиты настроек
-  - Sidebar с настройками провайдера
-  - Область чата
+  - Provider Settings модальное окно (NEW!)
+  - Sidebar с провайдером и кнопками
+  - Область чата с File Editor mode
   - Футер с информацией (разработчик, версия, дата, размер окна)
 
 - **`src/styles.css`**
   - Современный дизайн с purple/indigo градиентами
   - Анимации и transitions
   - Glassmorphism эффекты
-  - Стили для защищенных полей
+  - Стили для модальных окон и защищенных полей
 
 - **`src/main.js`**
-  - PIN логика (модальное окно, только для настроек)
-  - Управление lock/unlock состоянием
+  - PIN логика (разблокировка для Settings)
+  - Event listeners централизованно в `init()`
   - Отслеживание размера окна
-  - Обработка событий (double-click на developer name)
+  - Chat mode & File Editor mode
+  - Echo тест с детальной статистикой
+
+- **`src/provider-settings.js`** (NEW!)
+  - Модальное окно для настройки провайдера
+  - Сохранение в `config_qt.json` через Tauri backend
+  - Автозагрузка сохраненных настроек
+  - Показ/скрытие API ключей
+
+- **`src/file-editor.js`** (NEW!)
+  - File Editor mode для редактирования файлов через AI
+  - Выбор файла, отправка AI, сохранение изменений
+  - Версионирование (_AI_1, _AI_2 и т.д.)
+  - Клик по имени файла → копирование пути
 
 #### Backend
 

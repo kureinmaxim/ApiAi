@@ -60,6 +60,10 @@ npm run tauri dev
 - 🎨 Purple/indigo color scheme
 - 📱 Responsive design
 - 🔓 Double-click developer name in footer to unlock settings
+- ⚙️ **Provider Settings Modal** - click "⚙️ Settings" to configure
+- 📄 **File Editor Mode** - AI-powered file editing with versioning
+- 🔊 **Echo Test** - test connection with detailed timing stats
+- 💾 **Persistent Settings** - auto-save to `config_qt.json`
 
 ### Python Version (Stable)
 
@@ -108,11 +112,19 @@ python3 main.py
 On first run, the application creates `config_qt.json` automatically in the **project root**.
 
 ### Tauri Version
-To configure protected settings:
-1. Click the lock icon (🔒) in sidebar OR double-click "Maksim Kurein" in footer
-2. Enter PIN (default: `1234`)
-3. Edit Telegram URL, Port, Encryption Key, or API Key
-4. Click lock icon again to lock settings
+To configure provider settings:
+1. Click **"⚙️ Settings"** button in sidebar
+2. If locked, unlock with PIN (default: `1234`)
+3. Edit Telegram URL, Port, API Key, Encryption settings
+4. Click **"💾 Save Settings"** - automatically saved to `config_qt.json`
+5. Settings persist between app restarts
+
+**File Editor Mode:**
+1. Click **"📄 Select File"** to choose a file
+2. Write editing instructions in the prompt
+3. Click **Send** - AI processes the file
+4. Choose to overwrite original or create new version (_AI_1, _AI_2, etc.)
+5. Click file name to copy path to clipboard
 
 ### Python Version
 To configure API keys:

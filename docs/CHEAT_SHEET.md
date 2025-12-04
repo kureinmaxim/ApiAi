@@ -112,11 +112,29 @@ ApiAi/config_qt.json      # Shared by all versions
 
 ## 🎨 Tauri UI Features
 
+### Core Features
 - ✨ Modern gradient design (purple/indigo)
 - 🔒 Smart PIN protection (settings only)
 - 📱 Responsive layout
 - 🌙 Dark theme
 - ⚡ Fast Rust backend
+
+### Provider Settings Modal (NEW!)
+- Click **"⚙️ Settings"** button to open
+- Settings saved to `config_qt.json` automatically
+- Настройки восстанавливаются при перезапуске
+- Show/Hide keys toggle
+
+### File Editor Mode (NEW!)
+1. Click **"📄 Select File"** to choose file
+2. Write instructions (e.g., "Add new section about features")
+3. Click **Send** - AI processes file
+4. Choose: Overwrite original OR Create new with _AI_N suffix
+5. Click file name → copy path to clipboard
+
+### Echo Test
+- Click **"🔊 Echo"** to test connection
+- Shows: Round-trip time, Server time, Network time
 
 ---
 
