@@ -34,16 +34,8 @@
             "fs:allow-write-text-file",
             "fs:allow-read-text-file",
             "fs:allow-exists",
-            "fs:default",
+            "fs:scope-home-recursive",
             "opener:default"
-          ],
-          "allow": [
-            {
-              "path": "$RESOURCE/**"
-            },
-            {
-              "path": "$HOME/**"
-            }
           ]
         }
       ]
