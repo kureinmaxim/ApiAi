@@ -147,7 +147,11 @@ async function init() {
 
 function setupEventListeners() {
   // Send button and prompt input
-  sendBtn.addEventListener('click', sendMessage);
+  if (sendBtn) {
+    sendBtn.addEventListener('click', sendMessage);
+  } else {
+    console.error('sendBtn not found!');
+  }
 
   promptInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -507,12 +511,16 @@ function setupWindowSizeHandler() {
       handleDoubleClick(e);
     }
   });
-
-  console.log('Window size handler setup complete');
 }
 
 function setupEchoHandler() {
-  if (!echoBtn) return;
+  console.log('setupEchoHandler called');
+  console.log('echoBtn in setupEchoHandler:', echoBtn);
+
+  if (!echoBtn) {
+    console.error('Echo button not found!');
+    return;
+  }
 
   echoBtn.addEventListener('click', async () => {
     const currentText = promptInput.value.trim();
@@ -705,55 +713,7 @@ useEncryption.addEventListener('change', (e) => {
 
 // Event listeners for send button are now in init()
 
-// Save Settings
-const saveSettingsBtn = document.getElementById('save-settings');
-
-saveSettingsBtn.addEventListener('click', async () => {
-  if (!window.appConfig) return;
-
-  // Update config object from UI
-  const newConfig = { ...window.appConfig };
-
-  // Update API keys based on current fields
-  // Note: This is a bit tricky because we only show one key field at a time.
-  // Ideally, we should store all keys in memory and update them as the user switches providers.
-  // For now, let's update the currently visible key.
-
-  const provider = providerSelect.value;
-  const currentKey = document.getElementById('api-key').value;
-
-  if (provider === 'telegram') {
-    newConfig.api_keys.telegram_key = currentKey;
-    newConfig.api_keys.telegram_url = document.getElementById('telegram-url').value;
-    newConfig.api_keys.telegram_enc_key = encryptionKeyInput.value;
-    newConfig.api_keys.telegram_use_encryption = useEncryption.checked;
-  } else if (provider === 'anthropic') {
-    newConfig.api_keys.anthropic = currentKey;
-  } else if (provider === 'openai') {
-    newConfig.api_keys.openai = currentKey;
-  }
-
-  try {
-    await invoke('save_config', { newConfig });
-
-    // Visual feedback
-    const originalText = saveSettingsBtn.textContent;
-    saveSettingsBtn.textContent = '✅ Saved!';
-    saveSettingsBtn.classList.add('success');
-
-    setTimeout(() => {
-      saveSettingsBtn.textContent = originalText;
-      saveSettingsBtn.classList.remove('success');
-    }, 2000);
-
-    // Update global config
-    window.appConfig = newConfig;
-
-  } catch (e) {
-    console.error('Failed to save settings:', e);
-    alert('Failed to save settings: ' + e);
-  }
-});
+// Settings save is now handled in provider-settings.js modal
 
 // Clear button event listener is now in setupEventListeners()
 
