@@ -191,9 +191,23 @@ async function handleFileEditorMode(instructions) {
         return;
     }
 
-    isProcessing = true;
-    sendBtn.disabled = true;
-    sendBtn.textContent = '⏳ Processing...';
+    // Get references to DOM elements
+    const sendBtn = document.getElementById('send-btn');
+    const providerSelect = document.getElementById('provider');
+    const useEncryption = document.getElementById('use-encryption');
+    const encryptionKeyInput = document.getElementById('encryption-key');
+    const promptInput = document.getElementById('prompt-input'); // Added for finally block
+
+    // Access global functions from main.js
+    const appendMessage = window.appendMessage;
+    const invoke = window.__TAURI__.core.invoke;
+
+    // Set processing state
+    window.isProcessing = true;
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.textContent = '⏳ Processing...';
+    }
 
     try {
         // Build prompt with file content
@@ -210,19 +224,21 @@ Instructions: ${instructions}
 Please provide the modified file content. Return ONLY the file content, without any explanations or markdown code blocks.`;
 
         // Show user message
-        appendMessage(`📝 Editing file: ${fileEditorState.fileName}\n\nInstructions: ${instructions}`, 'user');
+        if (appendMessage) {
+            appendMessage(`📝 Editing file: ${fileEditorState.fileName}\n\nInstructions: ${instructions}`, 'user');
+        }
 
         // Send to AI
-        const provider = providerSelect.value;
-        const apiKey = document.getElementById('api-key').value;
+        const provider = providerSelect ? providerSelect.value : 'telegram';
+        const apiKey = document.getElementById('api-key')?.value || '';
 
         let telegramUrl = null;
         let encryptionKey = null;
         let useEnc = false;
 
         if (provider === 'telegram') {
-            const host = document.getElementById('telegram-url').value;
-            const port = document.getElementById('telegram-port').value;
+            const host = document.getElementById('telegram-url')?.value || '';
+            const port = document.getElementById('telegram-port')?.value || '8000';
 
             if (host.includes('://')) {
                 telegramUrl = host;
@@ -230,8 +246,8 @@ Please provide the modified file content. Return ONLY the file content, without 
                 telegramUrl = `http://${host}:${port}/ai_query`;
             }
 
-            useEnc = useEncryption.checked;
-            if (useEnc) {
+            useEnc = useEncryption ? useEncryption.checked : false;
+            if (useEnc && encryptionKeyInput) {
                 encryptionKey = encryptionKeyInput.value;
             }
         }
@@ -294,12 +310,19 @@ Please provide the modified file content. Return ONLY the file content, without 
 
     } catch (error) {
         console.error('File editor error:', error);
-        appendMessage(`❌ Error: ${error}`, 'error');
+        alert('Error processing file: ' + error);
     } finally {
-        isProcessing = false;
-        sendBtn.disabled = false;
-        sendBtn.textContent = 'Send 🚀';
-        promptInput.value = '';
+        window.isProcessing = false;
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.textContent = '→';
+        }
+        if (promptInput) {
+            promptInput.value = '';
+        }
+        if (window.scrollToBottom) {
+            window.scrollToBottom();
+        }
     }
 }
 
