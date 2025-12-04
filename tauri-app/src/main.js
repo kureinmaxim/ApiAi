@@ -141,13 +141,41 @@ async function init() {
   setTimeout(updateWindowSize, 500);
   setTimeout(updateWindowSize, 1000);
 
-  // Setup event listeners for send button and prompt input
+  // Setup all event listeners
+  setupEventListeners();
+}
+
+function setupEventListeners() {
+  // Send button and prompt input
   sendBtn.addEventListener('click', sendMessage);
 
   promptInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       sendMessage();
     }
+  });
+
+  // Clear chat button
+  clearBtn.addEventListener('click', () => {
+    conversationId = null;
+
+    // Reset provider info to default state
+    currentProviderInfo = {
+      provider: null,
+      model: null
+    };
+
+    // Restore welcome message with provider info
+    chatHistory.innerHTML = `
+      <div class="message system">
+        <div class="content">Welcome to ApiAi! Select a provider and start chatting.</div>
+        <div id="provider-info" class="provider-info"></div>
+      </div>
+    `;
+    // Update provider info after restoring the element
+    setTimeout(() => {
+      updateProviderInfo();
+    }, 10);
   });
 }
 
@@ -727,27 +755,7 @@ saveSettingsBtn.addEventListener('click', async () => {
   }
 });
 
-clearBtn.addEventListener('click', () => {
-  conversationId = null;
-
-  // Reset provider info to default state
-  currentProviderInfo = {
-    provider: null,
-    model: null
-  };
-
-  // Restore welcome message with provider info
-  chatHistory.innerHTML = `
-    <div class="message system">
-      <div class="content">Welcome to ApiAi! Select a provider and start chatting.</div>
-      <div id="provider-info" class="provider-info"></div>
-    </div>
-  `;
-  // Update provider info after restoring the element
-  setTimeout(() => {
-    updateProviderInfo();
-  }, 10);
-});
+// Clear button event listener is now in setupEventListeners()
 
 // Echo button handler is in setupEchoHandler()
 
@@ -886,8 +894,13 @@ window.currentProviderInfo = currentProviderInfo;
 window.updateProviderInfo = updateProviderInfo;
 window.conversationId = conversationId;
 
-// Initialize on load
-init();
+// Initialize on load - wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  // DOM already loaded
+  init();
+}
 
 // Export functionality
 
