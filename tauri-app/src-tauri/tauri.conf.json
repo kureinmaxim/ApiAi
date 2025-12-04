@@ -11,7 +11,7 @@
     "windows": [
       {
         "title": "ApiAi",
-        "width": 1250,
+        "width": 1100,
         "height": 1000
       }
     ],
@@ -34,6 +34,8 @@
             "fs:allow-write-text-file",
             "fs:allow-read-text-file",
             "fs:allow-exists",
+            "fs:allow-mkdir",
+            "fs:allow-read-dir",
             "fs:scope-home-recursive",
             "opener:default"
           ]

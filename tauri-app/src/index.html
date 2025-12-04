@@ -148,7 +148,8 @@
         <button id="select-file-btn" class="secondary-btn small-btn" disabled style="opacity: 0.5;">📁 Select
           File</button>
         <div class="file-formats-hint">
-          <small>📄 Supported formats: .txt, .md, .json, .js, .ts, .py, .rs, .go, .html, .css, .xml, .yaml, .toml, .ini, .sh, and more</small>
+          <small>📄 Supported formats: .txt, .md, .json, .js, .ts, .py, .rs, .go, .html, .css, .xml, .yaml, .toml, .ini,
+            .sh, and more</small>
         </div>
         <div id="selected-file-info" class="file-info hidden">
           <span class="file-name" id="selected-file-name"></span>
@@ -208,14 +209,23 @@
 
       <!-- Export Area -->
       <div class="export-area">
-        <button id="save-chat" class="export-btn" title="Save Chat History">💾 Save</button>
-        <button id="load-chat" class="export-btn" title="Load Chat History">📂 Load</button>
-        <button id="chat-library" class="export-btn" title="Chat Library">📚 Library</button>
-        <button id="import-chat" class="export-btn" title="Import from TXT/MD">📥 Import</button>
-        <button id="export-txt" class="export-btn" title="Export as Text">📄 TXT</button>
-        <button id="export-md" class="export-btn" title="Export as Markdown">📝 MD</button>
-        <button id="export-pdf" class="export-btn" title="Export as PDF">📕 PDF</button>
-        <button id="export-docx" class="export-btn" title="Export as Word">📘 DOCX</button>
+        <button id="save-chat" class="export-btn"
+          title="Save: Save current chat history to JSON file (preserves full context)">💾 Save</button>
+        <button id="load-chat" class="export-btn"
+          title="Load: Restore saved chat history from JSON (with full context and metadata)">📂 Load</button>
+        <button id="chat-library" class="export-btn" title="Library: Browse and manage all saved chat sessions">📚
+          Library</button>
+        <button id="import-chat" class="export-btn"
+          title="Import: Import conversation from plain text files (TXT/MD) - converts to chat format">📥
+          Import</button>
+        <button id="export-txt" class="export-btn"
+          title="Export as Text: Plain text format (.txt) - simple, universal">📄 TXT</button>
+        <button id="export-md" class="export-btn"
+          title="Export as Markdown: Markdown format (.md) - formatted, good for documentation">📝 MD</button>
+        <button id="export-pdf" class="export-btn"
+          title="Export as PDF: PDF document (.pdf) - professional, print-ready">📕 PDF</button>
+        <button id="export-docx" class="export-btn"
+          title="Export as Word: Microsoft Word document (.docx) - editable in Word">📘 DOCX</button>
       </div>
 
 
@@ -227,7 +237,7 @@
         </div>
         <div class="footer-item">
           <span class="footer-label">Version:</span>
-          <span class="footer-value">2.4.0</span>
+          <span class="footer-value">2.4.1</span>
         </div>
         <div class="footer-item">
           <span class="footer-label">APP ID:</span>
