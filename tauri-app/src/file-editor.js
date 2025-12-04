@@ -336,27 +336,35 @@ Please provide the modified file content. Return ONLY the file content, without 
 
         // Ask user: overwrite or create new?
         const { ask } = window.__TAURI__.dialog;
-        const choice = await ask(
-            'Save Options:\n\n' +
-            '• YES - Overwrite original file\n' +
-            '• NO - Create new file with _AI_N suffix\n' +
-            '• CANCEL - Don\'t save',
+
+        // First dialog: Do you want to save?
+        const shouldSave = await ask(
+            'Do you want to save the AI-processed file?',
             {
                 title: 'Save File',
                 type: 'warning'
             }
         );
 
-        if (choice === null) {
-            // User cancelled
+        if (!shouldSave) {
+            // User cancelled (clicked No)
             appendMessage('❌ Save cancelled', 'system');
             return;
         }
 
+        // Second dialog: Overwrite or create new?
+        const shouldOverwrite = await ask(
+            'YES - Overwrite original file\\n\\nNO - Create new file with _AI_N suffix',
+            {
+                title: 'Save Options',
+                type: 'warning'
+            }
+        );
+
         const { writeTextFile } = window.__TAURI__.fs;
         let savePath;
 
-        if (choice) {
+        if (shouldOverwrite) {
             // Overwrite original
             savePath = fileEditorState.filePath;
             await writeTextFile(savePath, response.text);

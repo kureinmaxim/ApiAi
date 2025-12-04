@@ -2,6 +2,10 @@
 // Chat History Persistence - JavaScript Functions
 // ============================================================================
 
+// Import Tauri invoke function
+const { invoke } = window.__TAURI__.core;
+
+
 // Get DOM elements
 const getChatHistory = () => document.getElementById('chat-history');
 const getConversationId = () => window.conversationId || null;
