@@ -44,24 +44,55 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelProviderSettings?.addEventListener('click', closeModal);
 
     // Save settings
-    saveProviderSettings?.addEventListener('click', () => {
-        // Save to hidden fields
+    saveProviderSettings?.addEventListener('click', async () => {
+        // Save to hidden fields first
         const telegramUrl = document.getElementById('telegram-url');
         const telegramPort = document.getElementById('telegram-port');
         const apiKey = document.getElementById('api-key');
         const encryptionKey = document.getElementById('encryption-key');
         const useEncryption = document.getElementById('use-encryption');
 
-        if (telegramUrl) telegramUrl.value = document.getElementById('modal-telegram-url').value;
-        if (telegramPort) telegramPort.value = document.getElementById('modal-telegram-port').value;
-        if (apiKey) apiKey.value = document.getElementById('modal-api-key').value;
-        if (encryptionKey) encryptionKey.value = document.getElementById('modal-encryption-key').value;
-        if (useEncryption) useEncryption.value = document.getElementById('modal-use-encryption').checked;
+        const modalTelegramUrl = document.getElementById('modal-telegram-url').value;
+        const modalTelegramPort = document.getElementById('modal-telegram-port').value;
+        const modalApiKey = document.getElementById('modal-api-key').value;
+        const modalEncryptionKey = document.getElementById('modal-encryption-key').value;
+        const modalUseEncryption = document.getElementById('modal-use-encryption').checked;
+
+        if (telegramUrl) telegramUrl.value = modalTelegramUrl;
+        if (telegramPort) telegramPort.value = modalTelegramPort;
+        if (apiKey) apiKey.value = modalApiKey;
+        if (encryptionKey) encryptionKey.value = modalEncryptionKey;
+        if (useEncryption) useEncryption.value = modalUseEncryption;
+
+        // Save to backend config file
+        if (window.appConfig) {
+            const newConfig = { ...window.appConfig };
+
+            // Update config with modal values
+            newConfig.api_keys.telegram_url = modalTelegramUrl;
+            newConfig.api_keys.telegram_key = modalApiKey;
+            newConfig.api_keys.telegram_enc_key = modalEncryptionKey;
+            newConfig.api_keys.telegram_use_encryption = modalUseEncryption;
+
+            try {
+                const { invoke } = window.__TAURI__.core;
+                await invoke('save_config', { newConfig });
+
+                // Update global config
+                window.appConfig = newConfig;
+
+                console.log('Provider settings saved to config file');
+            } catch (e) {
+                console.error('Failed to save config:', e);
+                alert('Ошибка сохранения: ' + e);
+                return;
+            }
+        }
 
         closeModal();
 
         // Visual feedback
-        saveProviderSettings.textContent = '✅ Saved!';
+        saveProviderSettings.textContent = '✅ Сохранено!';
         setTimeout(() => {
             saveProviderSettings.textContent = '💾 Save Settings';
         }, 2000);

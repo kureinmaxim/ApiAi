@@ -105,36 +105,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 fileNameElement.style.textDecoration = 'underline';
                 fileNameElement.onclick = async () => {
                     try {
-                        // Use opener plugin (Tauri v2) - open file with default system app
-                        // Try to open the file directly first
-                        if (window.__TAURI__?.opener) {
+                        // First, try to open the parent folder
+                        const pathParts = filePath.split('/');
+                        pathParts.pop(); // Remove filename
+                        const folderPath = pathParts.join('/');
+
+                        if (window.__TAURI__?.opener && folderPath) {
                             try {
-                                await window.__TAURI__.opener.open(filePath);
+                                await window.__TAURI__.opener.open(folderPath);
+                                console.log('Opened folder:', folderPath);
                                 return; // Success
-                            } catch (fileError) {
-                                console.log('Direct file open failed, trying folder:', fileError);
-                                // If direct file open fails, try opening the folder containing the file
-                                const pathParts = filePath.split('/');
-                                pathParts.pop(); // Remove filename
-                                const folderPath = pathParts.join('/');
-                                if (folderPath) {
-                                    await window.__TAURI__.opener.open(folderPath);
-                                    return; // Success
-                                }
-                                throw fileError; // Re-throw if folder open also fails
+                            } catch (folderError) {
+                                console.log('Folder open failed:', folderError);
+                                // Fall through to show manual dialog
                             }
-                        } else {
-                            throw new Error('Opener plugin not available');
                         }
+
+                        // If opener fails or unavailable, copy path and show message
+                        throw new Error('Automatic opening not available');
+
                     } catch (e) {
-                        console.error('Failed to open file:', e);
-                        // Fallback: show file path so user can open manually
+                        console.error('Opening file/folder:', e);
+
+                        // Get folder path
+                        const pathParts = filePath.split('/');
+                        pathParts.pop();
+                        const folderPath = pathParts.join('/');
+
+                        // Copy to clipboard first
+                        try {
+                            await navigator.clipboard.writeText(folderPath);
+                            console.log('Copied folder path to clipboard');
+                        } catch (clipErr) {
+                            console.error('Failed to copy:', clipErr);
+                        }
+
+                        // Detect OS for instructions
+                        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+                        const isWindows = navigator.platform.toUpperCase().indexOf('WIN') >= 0;
+
+                        let instruction = '';
+                        if (isMac) {
+                            instruction = 'Нажмите Cmd+Shift+G в Finder и вставьте путь.';
+                        } else if (isWindows) {
+                            instruction = 'Откройте проводник (Win+E), вставьте путь в адресную строку.';
+                        } else {
+                            instruction = 'Откройте файловый менеджер и вставьте путь.';
+                        }
+
+                        // Show message
                         const { message } = window.__TAURI__.dialog;
-                        await message(`Could not open file automatically.\n\nFile path:\n${filePath}\n\nYou can copy this path and open it manually.`, {
-                            title: 'File Location',
-                            type: 'info',
-                            okLabel: 'OK'
-                        });
+                        await message(
+                            `📂 Путь к папке скопирован в буфер обмена!\n\n` +
+                            `Файл: ${fileEditorState.fileName}\n` +
+                            `Папка: ${folderPath}\n\n` +
+                            instruction,
+                            {
+                                title: 'Расположение файла',
+                                type: 'info'
+                            }
+                        );
                     }
                 };
 

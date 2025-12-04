@@ -30,6 +30,7 @@ const telegramSettings = document.getElementById('telegram-settings');
 const useEncryption = document.getElementById('use-encryption');
 const encryptionKeyInput = document.getElementById('encryption-key');
 const windowSizeDisplay = document.getElementById('window-size');
+const echoBtn = document.getElementById('echo-btn');
 
 // Protected fields
 // Protected fields - will be re-queried or we can use a getter if needed, 
@@ -56,6 +57,7 @@ async function init() {
   // App opens directly, settings are locked by default
   updateProviderInfo();
   setupWindowSizeHandler();
+  setupEchoHandler();
 
   // Update window size after a short delay to ensure window is fully initialized
   setTimeout(() => {
@@ -138,6 +140,15 @@ async function init() {
   // Aggressively update window size to ensure it displays
   setTimeout(updateWindowSize, 500);
   setTimeout(updateWindowSize, 1000);
+
+  // Setup event listeners for send button and prompt input
+  sendBtn.addEventListener('click', sendMessage);
+
+  promptInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      sendMessage();
+    }
+  });
 }
 
 function updateApiKeyField() {
@@ -472,6 +483,101 @@ function setupWindowSizeHandler() {
   console.log('Window size handler setup complete');
 }
 
+function setupEchoHandler() {
+  if (!echoBtn) return;
+
+  echoBtn.addEventListener('click', async () => {
+    const currentText = promptInput.value.trim();
+    const testMessage = currentText || 'Echo 123456789';
+
+    // Prevented during processing
+    if (isProcessing) return;
+
+    // UI Updates
+    appendMessage(`🔊 Echo Test: ${testMessage}`, 'user');
+    isProcessing = true;
+    echoBtn.disabled = true;
+    echoBtn.textContent = '⏳ Testing...';
+
+    // Measure request start time
+    const startTime = performance.now();
+
+    // Gather Settings
+    const provider = providerSelect.value;
+
+    if (provider !== 'telegram') {
+      appendMessage('❌ Echo test only works with Telegram provider', 'error');
+      isProcessing = false;
+      echoBtn.disabled = false;
+      echoBtn.textContent = '🔊 Echo';
+      return;
+    }
+
+    const apiKey = document.getElementById('api-key').value;
+    let telegramUrl = null;
+    let encryptionKey = null;
+    let useEnc = false;
+
+    // Get Telegram URL
+    const urlInput = document.getElementById('telegram-url').value;
+    const portInput = document.getElementById('telegram-port').value;
+
+    // Construct URL - replace /ai_query with /echo
+    if (urlInput.includes('://')) {
+      // Full URL provided, replace endpoint
+      telegramUrl = urlInput.replace(/\/ai_query.*$/, '/echo');
+    } else {
+      // Host + port provided
+      telegramUrl = `http://${urlInput}:${portInput}/echo`;
+    }
+
+    if (useEncryption.checked) {
+      useEnc = true;
+      encryptionKey = encryptionKeyInput.value;
+    }
+
+    try {
+      const response = await invoke('perform_search', {
+        query: testMessage,
+        provider,
+        apiKey,
+        telegramUrl,
+        encryptionKey,
+        useEncryption: useEnc,
+        chatMode: false,
+        conversationId: null
+      });
+
+      // Measure round-trip time
+      const endTime = performance.now();
+      const roundTripTime = Math.round(endTime - startTime);
+
+      // Server processing time from response
+      const serverTime = response.processing_time_ms || 0;
+      const networkTime = roundTripTime - serverTime;
+
+      appendMessage(
+        `✅ Echo Response: ${response.text}\n\n` +
+        `📊 Timing:\n` +
+        `• Round-trip: ${roundTripTime}ms\n` +
+        `• Server: ${serverTime}ms\n` +
+        `• Network: ${networkTime}ms`,
+        'ai'
+      );
+
+    } catch (error) {
+      const endTime = performance.now();
+      const roundTripTime = Math.round(endTime - startTime);
+      appendMessage(`❌ Echo Error: ${error}\n⏱️ Time: ${roundTripTime}ms`, 'error');
+    } finally {
+      isProcessing = false;
+      echoBtn.disabled = false;
+      echoBtn.textContent = '🔊 Echo';
+      scrollToBottom();
+    }
+  });
+}
+
 // Store current provider info from API responses
 let currentProviderInfo = {
   provider: null,
@@ -569,13 +675,7 @@ useEncryption.addEventListener('change', (e) => {
   if (window.appConfig) window.appConfig.api_keys.telegram_use_encryption = e.target.checked;
 });
 
-sendBtn.addEventListener('click', sendMessage);
-
-promptInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-    sendMessage();
-  }
-});
+// Event listeners for send button are now in init()
 
 // Save Settings
 const saveSettingsBtn = document.getElementById('save-settings');
@@ -649,98 +749,7 @@ clearBtn.addEventListener('click', () => {
   }, 10);
 });
 
-// Echo button - sends echo test request automatically
-const echoBtn = document.getElementById('echo-btn');
-echoBtn.addEventListener('click', async () => {
-  const currentText = promptInput.value.trim();
-  const testMessage = currentText || 'Echo 123456789';
-
-  // Prevented during processing
-  if (isProcessing) return;
-
-  // UI Updates
-  appendMessage(`🔊 Echo Test: ${testMessage}`, 'user');
-  isProcessing = true;
-  echoBtn.disabled = true;
-  echoBtn.textContent = '⏳ Testing...';
-
-  // Measure request start time
-  const startTime = performance.now();
-
-  // Gather Settings
-  const provider = providerSelect.value;
-
-  if (provider !== 'telegram') {
-    appendMessage('❌ Echo test only works with Telegram provider', 'error');
-    isProcessing = false;
-    echoBtn.disabled = false;
-    echoBtn.textContent = '🔊 Echo';
-    return;
-  }
-
-  const apiKey = document.getElementById('api-key').value;
-  let telegramUrl = null;
-  let encryptionKey = null;
-  let useEnc = false;
-
-  // Get Telegram URL
-  const urlInput = document.getElementById('telegram-url').value;
-  const portInput = document.getElementById('telegram-port').value;
-
-  // Construct URL - replace /ai_query with /echo
-  if (urlInput.includes('://')) {
-    // Full URL provided, replace endpoint
-    telegramUrl = urlInput.replace(/\/ai_query.*$/, '/echo');
-  } else {
-    // Host + port provided
-    telegramUrl = `http://${urlInput}:${portInput}/echo`;
-  }
-
-  if (useEncryption.checked) {
-    useEnc = true;
-    encryptionKey = encryptionKeyInput.value;
-  }
-
-  try {
-    const response = await invoke('perform_search', {
-      query: testMessage,
-      provider,
-      apiKey,
-      telegramUrl,
-      encryptionKey,
-      useEncryption: useEnc,
-      chatMode: false,
-      conversationId: null
-    });
-
-    // Measure round-trip time
-    const endTime = performance.now();
-    const roundTripTime = Math.round(endTime - startTime);
-
-    // Server processing time from response
-    const serverTime = response.processing_time_ms || 0;
-    const networkTime = roundTripTime - serverTime;
-
-    appendMessage(
-      `✅ Echo Response: ${response.text}\n\n` +
-      `📊 Timing:\n` +
-      `• Round-trip: ${roundTripTime}ms\n` +
-      `• Server: ${serverTime}ms\n` +
-      `• Network: ${networkTime}ms`,
-      'ai'
-    );
-
-  } catch (error) {
-    const endTime = performance.now();
-    const roundTripTime = Math.round(endTime - startTime);
-    appendMessage(`❌ Echo Error: ${error}\n⏱️ Time: ${roundTripTime}ms`, 'error');
-  } finally {
-    isProcessing = false;
-    echoBtn.disabled = false;
-    echoBtn.textContent = '🔊 Echo';
-    scrollToBottom();
-  }
-});
+// Echo button handler is in setupEchoHandler()
 
 
 async function sendMessage() {
