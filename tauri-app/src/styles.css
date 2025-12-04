@@ -525,6 +525,35 @@ textarea:focus {
   font-size: 15px;
 }
 
+#abort-btn {
+  height: 80px;
+  min-width: 100px;
+  border-radius: 12px;
+  font-size: 15px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  animation: pulse-glow 2s ease-in-out infinite;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 100;
+  position: relative;
+}
+
+#abort-btn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+  }
+}
+
 /* Export Area */
 .export-area {
   padding: 12px 20px;

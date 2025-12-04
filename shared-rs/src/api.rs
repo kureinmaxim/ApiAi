@@ -8,6 +8,8 @@ pub struct SearchResult {
     pub model: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub conversation_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub request_id: Option<String>,
 }
 
 #[async_trait::async_trait]
@@ -72,6 +74,7 @@ impl ApiClient for AnthropicClient {
             provider: "Anthropic".to_string(),
             model: Some("claude-3-sonnet-20240229".to_string()),
             conversation_id: None,
+            request_id: None,
         })
     }
 }
@@ -129,6 +132,7 @@ impl ApiClient for OpenAIClient {
             provider: "OpenAI".to_string(),
             model: Some("gpt-4o".to_string()),
             conversation_id: None,
+            request_id: None,
         })
     }
 }
@@ -232,12 +236,17 @@ impl TelegramClient {
         let model = decrypted_data.get("model")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
+            
+        let request_id = decrypted_data.get("request_id")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
 
         Ok(SearchResult {
             text: result_text,
             provider,
             model,
             conversation_id,
+            request_id,
         })
     }
 }
@@ -291,7 +300,7 @@ impl ApiClient for TelegramClient {
         let text = response.text().await?;
         
         // Try to parse as JSON first
-        let (result_text, conversation_id, provider, model) = if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
+        let (result_text, conversation_id, provider, model, request_id) = if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
             let text_content = if let Some(resp) = json.get("response") {
                 resp.as_str().unwrap_or(&text).to_string()
             } else if let Some(content) = json.get("content") {
@@ -312,10 +321,14 @@ impl ApiClient for TelegramClient {
             let model_str = json.get("model")
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string());
+                
+            let req_id = json.get("request_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
             
-            (text_content, conv_id, provider_str, model_str)
+            (text_content, conv_id, provider_str, model_str, req_id)
         } else {
-            (text, None, "Telegram".to_string(), None)
+            (text, None, "Telegram".to_string(), None, None)
         };
 
         Ok(SearchResult {
@@ -323,6 +336,7 @@ impl ApiClient for TelegramClient {
             provider,
             model,
             conversation_id,
+            request_id,
         })
     }
 }

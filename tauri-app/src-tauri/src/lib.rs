@@ -72,6 +72,7 @@ struct SearchResponse {
     provider: String,
     model: Option<String>,
     conversation_id: Option<String>,
+    request_id: Option<String>,
 }
 
 #[tauri::command]
@@ -140,6 +141,7 @@ async fn perform_search(
             provider: result.provider,
             model: result.model,
             conversation_id: result.conversation_id,
+            request_id: result.request_id,
         }),
         Err(e) => Err(format!("Error: {}", e)),
     }
@@ -171,6 +173,52 @@ fn reset_window_size(state: State<AppState>) -> Result<(), String> {
     fs::write(&path, content).map_err(|e| format!("Failed to write config to {:?}: {}", path, e))?;
     
     Ok(())
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CancelRequestBody {
+    request_id: String,
+}
+
+#[tauri::command]
+async fn cancel_request(
+    request_id: String,
+    telegram_url: String,
+    api_key: String,
+) -> Result<String, String> {
+    // Build cancel endpoint URL
+    let cancel_url = if telegram_url.contains("/ai_query") {
+        telegram_url.replace("/ai_query", "/cancel_request")
+    } else {
+        format!("{}/cancel_request", telegram_url.trim_end_matches('/'))
+    };
+    
+    // Create HTTP client
+    let client = reqwest::Client::new();
+    
+    // Prepare request body
+    let body = CancelRequestBody { request_id };
+    
+    // Send POST request
+    match client.post(&cancel_url)
+        .header("X-API-KEY", api_key)
+        .header("X-APP-ID", "apiai-v2")
+        .json(&body)
+        .send()
+        .await
+    {
+        Ok(response) => {
+            if response.status().is_success() {
+                Ok("Request cancelled successfully".to_string())
+            } else {
+                Ok(format!("Cancel request returned status: {}", response.status()))
+            }
+        }
+        Err(e) => {
+            // Don't fail if cancel fails - request might have already completed
+            Ok(format!("Cancel request failed (request may have completed): {}", e))
+        }
+    }
 }
 
 // ============================================================================
@@ -452,6 +500,7 @@ pub fn run() {
             save_config, 
             save_window_size, 
             reset_window_size,
+            cancel_request,
             save_chat_history,
             load_chat_history,
             list_saved_chats,

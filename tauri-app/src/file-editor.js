@@ -31,13 +31,63 @@ function setupModeHandler() {
                 selectFileBtn.style.opacity = '1';
                 console.log('File editor enabled');
             } else {
+                // Switching away from file-editor - clear file preview
                 selectFileBtn.disabled = true;
                 selectFileBtn.style.opacity = '0.5';
+
+                // Clear file editor state
+                clearFileEditorPreview();
+                console.log('File editor disabled, preview cleared');
             }
         });
     });
 
     console.log('Mode handler setup complete');
+}
+
+// Clear file editor preview and state
+function clearFileEditorPreview() {
+    // Reset file editor state
+    fileEditorState = {
+        filePath: null,
+        fileName: null,
+        fileContent: null,
+        fileExtension: null,
+        fileSize: 0
+    };
+
+    // Clear UI elements
+    const selectedFileInfo = document.getElementById('selected-file-info');
+    const filePreview = document.getElementById('file-preview');
+    const fileNameElement = document.getElementById('selected-file-name');
+    const fileSizeElement = document.getElementById('selected-file-size');
+    const fileContentPreview = document.getElementById('file-content-preview');
+
+    if (selectedFileInfo) {
+        selectedFileInfo.classList.add('hidden');
+    }
+
+    if (filePreview) {
+        filePreview.classList.add('hidden');
+    }
+
+    if (fileNameElement) {
+        fileNameElement.textContent = '';
+        fileNameElement.onclick = null;
+        fileNameElement.style.cursor = '';
+        fileNameElement.style.textDecoration = '';
+    }
+
+    if (fileSizeElement) {
+        fileSizeElement.textContent = '';
+    }
+
+    if (fileContentPreview) {
+        fileContentPreview.textContent = '';
+    }
+
+    // Update global state
+    window.fileEditorState = fileEditorState;
 }
 
 
@@ -193,6 +243,7 @@ async function handleFileEditorMode(instructions) {
 
     // Get references to DOM elements
     const sendBtn = document.getElementById('send-btn');
+    const abortBtn = document.getElementById('abort-btn');
     const providerSelect = document.getElementById('provider');
     const useEncryption = document.getElementById('use-encryption');
     const encryptionKeyInput = document.getElementById('encryption-key');
@@ -204,9 +255,17 @@ async function handleFileEditorMode(instructions) {
 
     // Set processing state
     window.isProcessing = true;
+    window.abortRequested = false; // Reset abort flag
+
     if (sendBtn) {
         sendBtn.disabled = true;
         sendBtn.textContent = '⏳ Processing...';
+    }
+
+    // Show abort button
+    if (abortBtn) {
+        abortBtn.classList.remove('hidden');
+        console.log('Abort button shown in file editor mode');
     }
 
     try {
@@ -263,6 +322,12 @@ Please provide the modified file content. Return ONLY the file content, without 
             conversationId: null
         });
 
+        // Check if aborted
+        if (window.abortRequested) {
+            appendMessage('⚠️ File processing cancelled by user', 'system');
+            return;
+        }
+
         // Show AI response preview
         const previewText = response.text.length > 300
             ? response.text.substring(0, 300) + '...'
@@ -310,13 +375,29 @@ Please provide the modified file content. Return ONLY the file content, without 
 
     } catch (error) {
         console.error('File editor error:', error);
-        alert('Error processing file: ' + error);
+
+        // Check if aborted
+        if (window.abortRequested) {
+            appendMessage('⚠️ File processing cancelled by user', 'system');
+        } else {
+            appendMessage(`❌ Error processing file: ${error}`, 'error');
+        }
     } finally {
         window.isProcessing = false;
+        window.abortRequested = false;
+
         if (sendBtn) {
             sendBtn.disabled = false;
             sendBtn.textContent = '→';
         }
+
+        // Hide abort button
+        const abortBtn = document.getElementById('abort-btn');
+        if (abortBtn) {
+            abortBtn.classList.add('hidden');
+            console.log('Abort button hidden in file editor mode');
+        }
+
         if (promptInput) {
             promptInput.value = '';
         }

@@ -22,6 +22,8 @@ const windowSizeCancel = document.getElementById('window-size-cancel');
 const chatHistory = document.getElementById('chat-history');
 const promptInput = document.getElementById('prompt-input');
 const sendBtn = document.getElementById('send-btn');
+// abortBtn will be initialized in setupEventListeners
+let abortBtn = null;
 const clearBtn = document.getElementById('clear-chat');
 const lockIndicator = document.getElementById('lock-indicator');
 const developerName = document.getElementById('developer-name');
@@ -40,6 +42,10 @@ const protectedFields = document.querySelectorAll('.protected-field');
 
 // State
 let isProcessing = false;
+let abortRequested = false; // Flag to abort current request
+window.abortRequested = false; // Make it globally accessible
+let currentRequestId = null; // Track current request ID for server cancellation
+let currentTelegramUrl = null; // Track current telegram URL
 // Use window.settingsUnlocked so it's accessible from other scripts
 window.settingsUnlocked = false;
 
@@ -146,6 +152,12 @@ async function init() {
 }
 
 function setupEventListeners() {
+  // Initialize abort button reference
+  abortBtn = document.getElementById('abort-btn');
+
+  console.log('=== Setting up event listeners ===');
+  console.log('abortBtn element:', abortBtn);
+
   // Send button and prompt input
   if (sendBtn) {
     sendBtn.addEventListener('click', sendMessage);
@@ -158,6 +170,19 @@ function setupEventListeners() {
       sendMessage();
     }
   });
+
+  // Abort button - add both addEventListener AND onclick
+  if (abortBtn) {
+    abortBtn.addEventListener('click', abortRequest);
+    // Also set onclick directly as fallback
+    abortBtn.onclick = function () {
+      console.log('Abort button clicked via onclick!');
+      abortRequest();
+    };
+    console.log('Abort button initialized with click handler');
+  } else {
+    console.error('Abort button not found!');
+  }
 
   // Clear chat button
   clearBtn.addEventListener('click', () => {
@@ -737,9 +762,15 @@ async function sendMessage() {
   appendMessage(query, 'user');
   promptInput.value = '';
   isProcessing = true;
+  abortRequested = false;
+  window.abortRequested = false;
   sendBtn.disabled = true;
   sendBtn.textContent = '...';
 
+  // Show abort button
+  if (abortBtn) {
+    abortBtn.classList.remove('hidden');
+  }
 
   // Gather Settings
   const provider = providerSelect.value;
@@ -765,6 +796,9 @@ async function sendMessage() {
     if (useEnc) {
       encryptionKey = encryptionKeyInput.value;
     }
+
+    // Store telegram URL for potential cancellation
+    currentTelegramUrl = telegramUrl;
   }
 
   try {
@@ -778,6 +812,18 @@ async function sendMessage() {
       chatMode,
       conversationId
     });
+
+    // Store request_id for potential cancellation
+    if (response.request_id) {
+      currentRequestId = response.request_id;
+      console.log('Stored request_id:', currentRequestId);
+    }
+
+    // Check if aborted
+    if (abortRequested || window.abortRequested) {
+      appendMessage('⚠️ Request cancelled by user', 'system');
+      return;
+    }
 
     // Remove provider information from response text if present
     let cleanedText = response.text
@@ -813,14 +859,89 @@ async function sendMessage() {
     }
 
   } catch (error) {
-
+    // Check if error was due to abort
+    if (abortRequested || window.abortRequested) {
+      appendMessage('⚠️ Request cancelled by user', 'system');
+      return; // Don't show error if user aborted
+    }
     appendMessage(`Error: ${error}`, 'error');
   } finally {
     isProcessing = false;
+    abortRequested = false;
+    window.abortRequested = false;
     sendBtn.disabled = false;
     sendBtn.textContent = 'Send 🚀';
+
+    // Hide abort button
+    if (abortBtn) {
+      abortBtn.classList.add('hidden');
+    }
+
     scrollToBottom();
   }
+}
+
+// Abort current request
+async function abortRequest() {
+  console.log('=== ABORT REQUEST CALLED ===');
+  console.log('isProcessing:', isProcessing);
+  console.log('window.isProcessing:', window.isProcessing);
+  console.log('currentRequestId:', currentRequestId);
+  console.log('currentTelegramUrl:', currentTelegramUrl);
+
+  // Force abort even if isProcessing is false (in case of race condition)
+  console.log('Setting abort flags...');
+  abortRequested = true;
+  window.abortRequested = true;
+
+  // Send cancel request to server (best effort - don't fail if this fails)
+  if (currentRequestId && currentTelegramUrl) {
+    console.log('Sending cancel request to server...');
+    try {
+      const apiKey = document.getElementById('api-key')?.value || '';
+      await invoke('cancel_request', {
+        requestId: currentRequestId,
+        telegramUrl: currentTelegramUrl,
+        apiKey: apiKey
+      });
+      console.log('Cancel request sent to server');
+    } catch (error) {
+      console.warn('Failed to send cancel request to server:', error);
+      // Don't fail - just log it
+    }
+  } else {
+    console.log('No request_id or telegram_url - skipping server cancel');
+  }
+
+  // Update UI immediately
+  isProcessing = false;
+  window.isProcessing = false;
+
+  const sendBtn = document.getElementById('send-btn');
+  const abortBtn = document.getElementById('abort-btn');
+
+  console.log('Updating UI...');
+
+  if (sendBtn) {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Send 🚀';
+    console.log('Send button re-enabled');
+  }
+
+  if (abortBtn) {
+    abortBtn.classList.add('hidden');
+    console.log('Abort button hidden');
+  }
+
+  // Show abort message
+  appendMessage('⚠️ Request cancelled by user', 'system');
+  scrollToBottom();
+
+  // Clear tracking variables
+  currentRequestId = null;
+  currentTelegramUrl = null;
+
+  console.log('=== ABORT COMPLETED ===');
 }
 
 function appendMessage(text, type, metadata = {}) {
