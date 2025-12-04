@@ -205,6 +205,11 @@ function setupEventListeners() {
     setTimeout(() => {
       updateProviderInfo();
     }, 10);
+
+    // Clear network log if available
+    if (window.clearNetworkLog) {
+      window.clearNetworkLog();
+    }
   });
 }
 
@@ -592,9 +597,20 @@ function setupEchoHandler() {
       telegramUrl = `http://${urlInput}:${portInput}/echo`;
     }
 
-    if (useEncryption.checked) {
-      useEnc = true;
+    // Fix: useEncryption is a hidden input
+    if (window.appConfig && window.appConfig.api_keys) {
+      useEnc = window.appConfig.api_keys.telegram_use_encryption;
+    } else {
+      useEnc = useEncryption.value === 'true';
+    }
+
+    if (useEnc) {
       encryptionKey = encryptionKeyInput.value;
+    }
+
+    // Log Echo request to history sidebar
+    if (window.logNetworkRequest) {
+      window.logNetworkRequest(telegramUrl, useEnc, testMessage);
     }
 
     try {
@@ -692,13 +708,7 @@ providerSelect.addEventListener('change', () => {
   updateProviderInfo();
 });
 
-useEncryption.addEventListener('change', () => {
-  if (useEncryption.checked) {
-    encryptionKeyInput.classList.remove('hidden');
-  } else {
-    encryptionKeyInput.classList.add('hidden');
-  }
-});
+
 
 // Show Keys Toggle
 const showKeysCheckbox = document.getElementById('show-keys');
@@ -732,9 +742,7 @@ encryptionKeyInput.addEventListener('input', (e) => {
   if (window.appConfig) window.appConfig.api_keys.telegram_enc_key = e.target.value;
 });
 
-useEncryption.addEventListener('change', (e) => {
-  if (window.appConfig) window.appConfig.api_keys.telegram_use_encryption = e.target.checked;
-});
+
 
 // Event listeners for send button are now in init()
 
@@ -792,13 +800,25 @@ async function sendMessage() {
       telegramUrl = `http://${host}:${port}/ai_query`;
     }
 
-    useEnc = useEncryption.checked;
+    // Fix: useEncryption is a hidden input, so .checked doesn't work.
+    // Read from appConfig or parse value string.
+    if (window.appConfig && window.appConfig.api_keys) {
+      useEnc = window.appConfig.api_keys.telegram_use_encryption;
+    } else {
+      useEnc = useEncryption.value === 'true';
+    }
+
     if (useEnc) {
       encryptionKey = encryptionKeyInput.value;
     }
 
     // Store telegram URL for potential cancellation
     currentTelegramUrl = telegramUrl;
+  }
+
+  // Log network request to history sidebar
+  if (window.logNetworkRequest) {
+    window.logNetworkRequest(telegramUrl || 'Direct API', useEnc, query);
   }
 
   try {

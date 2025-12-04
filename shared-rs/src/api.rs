@@ -188,6 +188,15 @@ impl TelegramClient {
         // This allows using /echo, /ai_query/secure, or any other endpoint
         let url = self.url.trim_end_matches('/').to_string();
 
+        // === NETWORK LOG ===
+        eprintln!("\n🌐 === HTTP REQUEST (ENCRYPTED) ===");
+        eprintln!("📍 URL: {}", url);
+        eprintln!("🔒 Encryption: ENABLED");
+        eprintln!("📤 Payload (plain): {}", serde_json::to_string_pretty(&payload).unwrap_or_default());
+        eprintln!("🔐 Payload (encrypted): {{ \"data\": \"{}...\" }}", &encrypted_data.chars().take(40).collect::<String>());
+        eprintln!("🔑 Headers: X-API-KEY: ****, X-APP-ID: apiai-v2");
+        eprintln!("=====================================\n");
+
         let client = reqwest::Client::new();
         let mut headers = reqwest::header::HeaderMap::new();
         if !self.api_key.is_empty() {
@@ -254,8 +263,16 @@ impl TelegramClient {
 #[async_trait::async_trait]
 impl ApiClient for TelegramClient {
     async fn search(&self, query: &str) -> Result<SearchResult, Box<dyn Error + Send + Sync>> {
-        if self.use_encryption && self.encryption_key.is_some() {
-            return self.search_encrypted(query).await;
+        // Check encryption settings
+        if self.use_encryption {
+            if self.encryption_key.is_none() || self.encryption_key.as_ref().unwrap().is_empty() {
+                eprintln!("WARNING: Encryption is enabled but encryption key is missing or empty!");
+                eprintln!("Request will be sent UNENCRYPTED!");
+                // Continue with unencrypted request
+            } else {
+                // Use encrypted channel
+                return self.search_encrypted(query).await;
+            }
         }
 
         if self.url.is_empty() {
@@ -283,6 +300,14 @@ impl ApiClient for TelegramClient {
         if let Some(ref conv_id) = self.conversation_id {
             payload["conversation_id"] = serde_json::json!(conv_id);
         }
+
+        // === NETWORK LOG ===
+        eprintln!("\n🌐 === HTTP REQUEST (UNENCRYPTED) ===");
+        eprintln!("📍 URL: {}", &self.url);
+        eprintln!("⚠️  Encryption: DISABLED - DATA SENT IN PLAIN TEXT!");
+        eprintln!("📤 Payload: {}", serde_json::to_string_pretty(&payload).unwrap_or_default());
+        eprintln!("🔑 Headers: X-API-KEY: ****, X-APP-ID: apiai-v2");
+        eprintln!("=====================================\n");
 
         let response = client
             .post(&self.url)

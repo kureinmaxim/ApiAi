@@ -1,0 +1,18 @@
+{
+  "api_keys": {
+    "anthropic": "",
+    "openai": "",
+    "telegram_url": "http://138.124.19.67:8000/ai_query",
+    "telegram_key": "b398f203ffb4a57afe3c5eff4239151404c85b8803507a58dca8ed64becfd392",
+    "telegram_enc_key": "83d68210ec84a39e2c3eb82a7a6b7afe488ae5684d45a8546c22b1fc0016cb10",
+    "telegram_use_encryption": true
+  },
+  "ui": {
+    "window_width": 1300,
+    "window_height": 1200
+  },
+  "security": {
+    "pin_code": "1234",
+    "require_pin": true
+  }
+}

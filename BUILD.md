@@ -20,6 +20,13 @@ npm install
 
 ### Запуск в режиме разработки
 
+**Вариант 1: Через Makefile (рекомендуется)**
+```bash
+cd tauri-app
+make dev
+```
+
+**Вариант 2: Через npm**
 ```bash
 cd tauri-app
 npm run tauri dev
@@ -33,6 +40,13 @@ npm run tauri dev
 
 ### Сборка релиза
 
+**Вариант 1: Через Makefile (рекомендуется)**
+```bash
+cd tauri-app
+make build
+```
+
+**Вариант 2: Через npm**
 ```bash
 cd tauri-app
 npm run tauri build
@@ -70,227 +84,96 @@ npm run tauri build
 - JavaScript логи в DevTools (открыть правой кнопкой → Inspect Element)
 
 **Релиз:**
-- **macOS**: `~/Library/Logs/com.apiai.app/`
-- **Windows**: `%APPDATA%\com.apiai.app\logs\`
-- **Linux**: `~/.local/share/com.apiai.app/logs/`
+- **macOS**: `~/Library/Logs/com.apiai.desktop/`
+- **Windows**: `%APPDATA%\com.apiai.desktop\logs\`
+- **Linux**: `~/.local/share/com.apiai.desktop/logs/`
 
 ---
 
-## 🐍 Python Version
 
-### Требования
-- Python 3.8+ ([python.org](https://python.org))
-- pip (устанавливается с Python)
 
-### Установка зависимостей
+## 🔧 Управление версиями
 
-```bash
-cd python
-python3 -m pip install -r requirements.txt
-```
+### Текущая версия: 2.4.2
 
-**Основные зависимости:**
-- PySide6 (GUI)
-- requests (HTTP)
-- cryptography (шифрование)
+Все команды выполняются из папки `tauri-app/`.
 
-### Запуск приложения
+### Проверить версию
 
 ```bash
-cd python
-python3 main.py
+cd tauri-app
+make version-status
 ```
 
-**Windows:**
+**Вывод:**
+```
+Current version: 2.4.2
+
+Files to sync:
+  ✓ tauri-app/src-tauri/Cargo.toml
+  ✓ tauri-app/src-tauri/tauri.conf.json
+  ✓ tauri-app/src/index.html
+```
+
+### Увеличить версию
+
+**Patch (исправления багов):**
 ```bash
-cd python
-python main.py
+cd tauri-app
+make version-bump-patch  # 2.4.2 → 2.4.3
 ```
 
-### Сборка инсталлятора
-
+**Minor (новые функции):**
 ```bash
-cd python
-python3 scripts/build.py
+cd tauri-app
+make version-bump-minor  # 2.4.2 → 2.5.0
 ```
 
-**Требования для сборки:**
-- PyInstaller
-- Inno Setup (Windows) или py2app (macOS)
-
-**Результат:**
-- **Windows**: `dist/ApiAi-Setup.exe`
-- **macOS**: `dist/ApiAi.dmg`
-
-### Запуск собранного приложения
-
-**macOS:**
+**Major (крупные изменения):**
 ```bash
-open dist/ApiAi.app
+cd tauri-app
+make version-bump-major  # 2.4.2 → 3.0.0
 ```
 
-**Windows:**
-```bash
-.\dist\ApiAi.exe
-```
-
-### Логи
-
-**Расположение логов:**
-- **macOS**: `~/Library/Application Support/ApiAi/logs/`
-- **Windows**: `%APPDATA%\ApiAi\logs\`
-- **Linux**: `~/.local/share/ApiAi/logs/`
-
-**Файлы логов:**
-- `app.log` - общие логи приложения
-- `api.log` - логи API запросов
-- `error.log` - ошибки
-
-**Просмотр логов:**
-```bash
-# macOS/Linux
-tail -f ~/Library/Application\ Support/ApiAi/logs/app.log
-
-# Windows
-type %APPDATA%\ApiAi\logs\app.log
-```
-
----
-
-## 🦀 Rust CLI Version
-
-> **Note:** Rust CLI использует общую библиотеку `shared-rs` для API и шифрования.
-
-### Требования
-- Rust (latest stable) ([rustup.rs](https://rustup.rs))
-
-### Установка Rust (если не установлен)
-
-**macOS/Linux:**
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source $HOME/.cargo/env
-```
-
-**Windows:**
-Скачать и установить с [rustup.rs](https://rustup.rs)
-
-### Запуск в режиме разработки
+### Установить конкретную версию
 
 ```bash
-cd rust
-cargo run
+cd tauri-app
+make version-set v=2.5.0
 ```
 
-**С аргументами:**
+### Синхронизировать файлы
+
+Если вы вручную изменили версию в одном из файлов:
+
 ```bash
-cargo run -- --provider telegram --query "Hello"
+cd tauri-app
+make version-sync
 ```
 
-### Сборка релиза
+### Что обновляется
 
-**Debug сборка (быстрая компиляция):**
-```bash
-cd rust
-cargo build
-```
-Результат: `target/debug/apiai`
+При изменении версии автоматически синхронизируются:
+- `src-tauri/Cargo.toml` - Rust package version
+- `src-tauri/tauri.conf.json` - Tauri app version
+- `src/index.html` - UI footer version
 
-**Release сборка (оптимизированная):**
-```bash
-cd rust
-cargo build --release
-```
-Результат: `target/release/apiai`
+### Полная документация
 
-### Запуск собранного релиза
-
-**Debug:**
-```bash
-./rust/target/debug/apiai --help
-```
-
-**Release:**
-```bash
-./rust/target/release/apiai --help
-```
-
-**Windows:**
-```bash
-.\rust\target\release\apiai.exe --help
-```
-
-### Логи
-
-**Режим разработки:**
-- Логи выводятся в stdout/stderr
-
-**Включить подробные логи:**
-```bash
-RUST_LOG=debug cargo run
-```
-
-**Уровни логирования:**
-- `RUST_LOG=error` - только ошибки
-- `RUST_LOG=warn` - предупреждения и ошибки
-- `RUST_LOG=info` - информация (по умолчанию)
-- `RUST_LOG=debug` - отладочная информация
-- `RUST_LOG=trace` - максимально подробно
-
-**Сохранить логи в файл:**
-```bash
-cargo run 2>&1 | tee logs/app.log
-```
-
----
-
-## 🔧 Общие инструменты
-
-### Управление версиями
-
-Из папки `rust/`:
-```bash
-make version-status        # Текущая версия
-make version-bump-patch    # 2.1.1 → 2.1.2
-make version-bump-minor    # 2.1.1 → 2.2.0
-```
-
-Это обновит версии во всех файлах:
-- `config_qt.json`
-- `python/config/config_qt.json.template`
-- `shared-rs/Cargo.toml` (NEW!)
-- `rust/Cargo.toml`
-- `tauri-app/src-tauri/Cargo.toml`
+См. [VERSION_MANAGEMENT_TAURI.md](VERSION_MANAGEMENT_TAURI.md) для подробностей.
 
 ### Очистка артефактов
 
-**Быстрая очистка (рекомендуется):**
+**Быстрая очистка:**
 ```bash
-# Из корня проекта
-make clean-all      # Удалить все build artifacts (~8.4GB)
-make clean-rust     # Удалить rust/target (~3GB)
-make clean-tauri    # Удалить tauri-app/src-tauri/target (~5.4GB)
-make size          # Проверить размер проекта
+cd tauri-app
+make clean  # Очистить build artifacts (~5GB)
 ```
 
 **Или вручную:**
-
-**Tauri:**
 ```bash
 cd tauri-app/src-tauri
 cargo clean
-```
-
-**Rust CLI:**
-```bash
-cd rust
-cargo clean
-```
-
-**Python:**
-```bash
-cd python
-rm -rf build dist __pycache__ *.spec venv
 ```
 
 **Shared library:**
@@ -299,7 +182,7 @@ cd shared-rs
 cargo clean
 ```
 
-Подробнее см. [CLEANUP.md](CLEANUP.md)
+Подробнее см. [CLEANUP_GUIDE.md](CLEANUP_GUIDE.md)
 
 ---
 
@@ -372,10 +255,10 @@ sudo apt-get install build-essential
 **Проверить права доступа:**
 ```bash
 # macOS/Linux
-chmod -R 755 ~/Library/Application\ Support/ApiAi/
+chmod -R 755 ~/Library/Application\ Support/com.apiai.desktop/
 
 # Создать папку логов вручную
-mkdir -p ~/Library/Application\ Support/ApiAi/logs/
+mkdir -p ~/Library/Application\ Support/com.apiai.desktop/logs/
 ```
 
 ---
@@ -429,20 +312,25 @@ cargo doc --open
 ## 🚀 Рекомендуемый workflow
 
 ### Для разработки
-1. Используйте **Tauri** для GUI разработки
-2. Режим разработки: `npm run tauri dev`
-3. Логи в терминале + DevTools
+1. Используйте **Tauri** для разработки
+2. Режим разработки: `cd tauri-app && npm run tauri dev`
+3. Логи в терминале + DevTools (правый клик → Inspect)
+4. Hot-reload для HTML/CSS/JS
+5. Network Monitor для отладки запросов
 
 ### Для тестирования
-1. Соберите release версию
+1. Соберите release версию: `cd tauri-app && make build`
 2. Тестируйте на чистой системе
-3. Проверяйте логи в user directories
+3. Проверяйте логи в `~/Library/Application Support/com.apiai.desktop/`
+4. Используйте Echo Test для проверки соединения
+5. Проверьте Console (📡) для network logs
 
 ### Для релиза
-1. Обновите версию: `make version-bump-patch`
-2. Соберите все версии
-3. Протестируйте установщики
-4. Проверьте логи после установки
+1. Обновите версию: `cd tauri-app && make version-bump-patch`
+2. Соберите: `make build`
+3. Протестируйте установщик (.dmg)
+4. Создайте GitHub Release: `gh release create vX.Y.Z`
+5. Приложите DMG файл из `src-tauri/target/release/bundle/dmg/`
 
 ---
 
@@ -450,18 +338,21 @@ cargo doc --open
 
 При возникновении проблем:
 1. Проверьте логи (см. разделы выше)
-2. Очистите артефакты сборки
-3. Переустановите зависимости
-4. Проверьте версии инструментов
+2. Очистите артефакты сборки: `make clean`
+3. Переустановите зависимости: `npm install`
+4. Проверьте версии инструментов: `node --version`, `rustc --version`
+5. Проверьте Console logs (📡 Network Monitor)
 
-**Разработчик:** Maksim Kurein  
-**Версия:** 2.1.1  
-**Дата релиза:** 03.12.2025
+**Разработчик:** Kurein M.N.  
+**Версия:** 2.4.2  
+**Дата релиза:** 04.12.2025
 
-## 📦 Компоненты проекта
+## 📦 Активные компоненты
 
-Все компоненты на единой версии **2.1.1**:
-- `shared-rs` - общая библиотека (API и шифрование)
-- `rust` - CLI версия
-- `tauri-app` - GUI версия
-- `python` - Python версия
+Текущая версия **2.4.2**:
+- `tauri-app/` - Tauri GUI приложение
+- `shared-rs/` - Общая Rust библиотека (API и ChaCha20-Poly1305 шифрование)
+
+**Архивные компоненты** (не используются):
+- `rust/` - Старая CLI версия (egui)
+- `python/` - Python Qt версия

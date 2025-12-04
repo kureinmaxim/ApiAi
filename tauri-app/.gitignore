@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Config with real API keys (DO NOT COMMIT)
+config_templates/config.json
+config_templates/*.backup
+
+# Keep template example (without keys)
+!config_templates/config.json.template

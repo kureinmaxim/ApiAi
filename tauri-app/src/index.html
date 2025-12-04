@@ -4,12 +4,14 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="network-monitor.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ApiAi</title>
   <script type="module" src="/main.js" defer></script>
   <script type="module" src="/chat-history.js" defer></script>
   <script type="module" src="/file-editor.js" defer></script>
   <script type="module" src="/provider-settings.js" defer></script>
+  <script type="module" src="/network-monitor.js" defer></script>
 
 </head>
 
@@ -188,6 +190,7 @@
 
       <div class="settings-actions">
         <button id="echo-btn" class="secondary-btn small-btn">🔊 Echo</button>
+        <button id="console-btn" class="secondary-btn small-btn">📡 Console</button>
       </div>
     </div>
 
@@ -237,7 +240,7 @@
         </div>
         <div class="footer-item">
           <span class="footer-label">Version:</span>
-          <span class="footer-value">2.4.2</span>
+          <span class="footer-value">2.5.2</span>
         </div>
         <div class="footer-item">
           <span class="footer-label">APP ID:</span>
@@ -252,6 +255,70 @@
           <span class="footer-value" id="window-size" title="Double-click to save or reset window size">-</span>
         </div>
       </div>
+    </div>
+
+    <!-- Request History Sidebar -->
+    <button id="toggle-history" class="history-toggle-btn" title="Hide Network Log">»</button>
+    <div class="request-history-sidebar" id="request-history-sidebar">
+      <div class="request-history-header">
+        <h3>📡 Network Log</h3>
+      </div>
+      <div class="request-history-filter">
+        <select id="history-filter">
+          <option value="all">All Requests</option>
+          <option value="encrypted">🔒 Encrypted Only</option>
+          <option value="unencrypted">⚠️ Unencrypted Only</option>
+        </select>
+      </div>
+      <div class="request-history-list" id="request-history-list">
+        <div class="request-history-empty">
+          <div class="history-empty-icon">📡</div>
+          <div class="history-empty-text">No requests yet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Console Instructions Modal -->
+  <div id="console-modal" class="pin-modal hidden">
+    <div class="pin-modal-content">
+      <h2>📡 Network Console</h2>
+      <p>All network requests are logged to the developer console with encryption status and full payload details.</p>
+
+      <div class="console-instructions">
+        <h3>How to open Developer Console:</h3>
+
+        <div class="os-section">
+          <h4>🍎 macOS</h4>
+          <ol>
+            <li>Right-click anywhere in the app</li>
+            <li>Select "Inspect Element" or "Inspect"</li>
+            <li>Click the "Console" tab</li>
+            <li>Alternative: Press <kbd>Cmd</kbd> + <kbd>Option</kbd> + <kbd>I</kbd></li>
+          </ol>
+        </div>
+
+        <div class="os-section">
+          <h4>🪟 Windows / Linux</h4>
+          <ol>
+            <li>Right-click anywhere in the app</li>
+            <li>Select "Inspect" or "Inspect Element"</li>
+            <li>Click the "Console" tab</li>
+            <li>Alternative: Press <kbd>F12</kbd> or <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd></li>
+          </ol>
+        </div>
+
+        <div class="console-info">
+          <h4>What you'll see:</h4>
+          <ul>
+            <li>🔒 <strong>ENCRYPTED</strong>: Full payload shown in both plain and encrypted form</li>
+            <li>⚠️ <strong>UNENCRYPTED</strong>: Warning + plain text payload visible</li>
+            <li>📍 URL, headers, and response data for every request</li>
+          </ul>
+        </div>
+      </div>
+
+      <button id="console-close" class="primary-btn">Got It!</button>
     </div>
   </div>
 </body>

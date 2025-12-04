@@ -305,10 +305,21 @@ Please provide the modified file content. Return ONLY the file content, without 
                 telegramUrl = `http://${host}:${port}/ai_query`;
             }
 
-            useEnc = useEncryption ? useEncryption.checked : false;
+            // Fix: useEncryption is a hidden input
+            if (window.appConfig && window.appConfig.api_keys) {
+                useEnc = window.appConfig.api_keys.telegram_use_encryption;
+            } else {
+                useEnc = useEncryption ? (useEncryption.value === 'true') : false;
+            }
+
             if (useEnc && encryptionKeyInput) {
                 encryptionKey = encryptionKeyInput.value;
             }
+        }
+
+        // Log network request to history sidebar
+        if (window.logNetworkRequest) {
+            window.logNetworkRequest(telegramUrl || 'Direct API', useEnc, `File Editor: ${fileEditorState.fileName}\nInstructions: ${instructions}`);
         }
 
         const response = await invoke('perform_search', {
