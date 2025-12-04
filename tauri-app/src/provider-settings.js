@@ -25,12 +25,35 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Load current values
-        document.getElementById('modal-telegram-url').value = document.getElementById('telegram-url')?.value || '';
-        document.getElementById('modal-telegram-port').value = document.getElementById('telegram-port')?.value || '';
-        document.getElementById('modal-api-key').value = document.getElementById('modal-api-key')?.value || '';
-        document.getElementById('modal-encryption-key').value = document.getElementById('encryption-key')?.value || '';
-        document.getElementById('modal-use-encryption').checked = document.getElementById('use-encryption')?.value === 'true';
+        // Load current values from config or fallback to hidden fields
+        let telegramUrl = '';
+        let telegramPort = '';
+        let apiKey = '';
+        let encryptionKey = '';
+        let useEnc = false;
+
+        if (window.appConfig && window.appConfig.api_keys) {
+            // Load from saved config
+            telegramUrl = window.appConfig.api_keys.telegram_url || '';
+            telegramPort = '8000'; // Default port
+            apiKey = window.appConfig.api_keys.telegram_key || '';
+            encryptionKey = window.appConfig.api_keys.telegram_enc_key || '';
+            useEnc = window.appConfig.api_keys.telegram_use_encryption || false;
+        } else {
+            // Fallback to hidden fields
+            telegramUrl = document.getElementById('telegram-url')?.value || '';
+            telegramPort = document.getElementById('telegram-port')?.value || '';
+            apiKey = document.getElementById('api-key')?.value || '';
+            encryptionKey = document.getElementById('encryption-key')?.value || '';
+            useEnc = document.getElementById('use-encryption')?.value === 'true';
+        }
+
+        // Populate modal fields
+        document.getElementById('modal-telegram-url').value = telegramUrl;
+        document.getElementById('modal-telegram-port').value = telegramPort;
+        document.getElementById('modal-api-key').value = apiKey;
+        document.getElementById('modal-encryption-key').value = encryptionKey;
+        document.getElementById('modal-use-encryption').checked = useEnc;
         document.getElementById('modal-show-keys').checked = false;
 
         providerSettingsModal.classList.remove('hidden');
