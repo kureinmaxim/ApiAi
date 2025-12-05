@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Toggle history sidebar
     if (toggleHistory && historySidebar && container) {
-        let isCollapsed = false;
+        let isCollapsed = true; // Start collapsed by default
 
         toggleHistory.addEventListener('click', () => {
             isCollapsed = !isCollapsed;
@@ -119,8 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Start with sidebar visible
-        container.classList.add('history-visible');
+        // Start with sidebar collapsed
+        historySidebar.classList.add('collapsed');
+        container.classList.remove('history-visible');
+        toggleHistory.textContent = '📡';
+        toggleHistory.classList.add('collapsed');
+        toggleHistory.title = "Show Network Log";
     }
 
     console.log('Network monitor initialized');

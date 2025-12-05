@@ -499,7 +499,7 @@ function setupWindowSizeHandler() {
       await invoke('reset_window_size');
 
       const currentWindow = getCurrentWindow();
-      await currentWindow.setSize({ width: 1200, height: 800 });
+      await currentWindow.setSize({ width: 900, height: 700 });
 
       windowSizeModal.classList.add('hidden');
 

@@ -11,8 +11,8 @@
     "windows": [
       {
         "title": "ApiAi",
-        "width": 1300,
-        "height": 1200,
+        "width": 900,
+        "height": 700,
         "devtools": true
       }
     ],

@@ -43,6 +43,10 @@ ApiAi/
 
 ## Documentation
 
+### Installation & Setup
+- [**Installation Guide for macOS**](docs/INSTALLATION_MACOS.md) - Полная инструкция по установке на macOS
+- [**Installation Guide for Windows**](docs/INSTALLATION_WINDOWS.md) - Полная инструкция по установке на Windows
+
 ### General
 - [Encryption Protocol](docs/ENCRYPTION.md) - ChaCha20-Poly1305 encryption details
 - [Network Ports](docs/PORTS.md) - Port usage and configuration
