@@ -134,14 +134,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (filePath) {
-                const content = await readTextFile(filePath);
-                const pathParts = filePath.split('/');
+                // Normalize path for Windows (remove leading slash if present, normalize separators)
+                let normalizedPath = filePath;
+                // Remove leading slash on Windows paths like "/C:\Users\..."
+                if (normalizedPath.startsWith('/') && normalizedPath.match(/^\/[A-Z]:/)) {
+                    normalizedPath = normalizedPath.substring(1);
+                }
+                // Normalize path separators
+                normalizedPath = normalizedPath.replace(/\\/g, '/');
+                
+                const content = await readTextFile(normalizedPath);
+                const pathParts = normalizedPath.split('/');
                 const fileName = pathParts[pathParts.length - 1];
                 const nameParts = fileName.split('.');
                 const extension = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
 
                 fileEditorState = {
-                    filePath,
+                    filePath: normalizedPath,
                     fileName,
                     fileContent: content,
                     fileExtension: extension,
@@ -376,8 +385,13 @@ Please provide the modified file content. Return ONLY the file content, without 
         let savePath;
 
         if (shouldOverwrite) {
-            // Overwrite original
+            // Overwrite original - normalize path
             savePath = fileEditorState.filePath;
+            // Normalize path for Windows
+            if (savePath.startsWith('/') && savePath.match(/^\/[A-Z]:/)) {
+                savePath = savePath.substring(1);
+            }
+            savePath = savePath.replace(/\\/g, '/');
             await writeTextFile(savePath, response.text);
             appendMessage(`💾 File overwritten: ${fileEditorState.fileName}`, 'system');
         } else {
