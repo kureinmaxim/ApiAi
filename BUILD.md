@@ -20,17 +20,19 @@ npm install
 
 ### Запуск в режиме разработки
 
-**Вариант 1: Через Makefile (рекомендуется)**
+**Вариант 1: Через Makefile (macOS/Linux)**
 ```bash
 cd tauri-app
 make dev
 ```
 
-**Вариант 2: Через npm**
+**Вариант 2: Через npm (рекомендуется для Windows)**
 ```bash
 cd tauri-app
 npm run tauri dev
 ```
+
+> **⚠️ Важно для Windows:** Команда `make` не доступна по умолчанию на Windows. Используйте `npm run tauri dev` вместо `make dev`.
 
 **Что происходит:**
 - Frontend запускается с hot-reload
@@ -40,17 +42,19 @@ npm run tauri dev
 
 ### Сборка релиза
 
-**Вариант 1: Через Makefile (рекомендуется)**
+**Вариант 1: Через Makefile (macOS/Linux)**
 ```bash
 cd tauri-app
 make build
 ```
 
-**Вариант 2: Через npm**
+**Вариант 2: Через npm (рекомендуется для Windows)**
 ```bash
 cd tauri-app
 npm run tauri build
 ```
+
+> **⚠️ Важно для Windows:** Команда `make` не доступна по умолчанию на Windows. Используйте `npm run tauri build` вместо `make build`. Если нужно установить make на Windows, можно использовать [Chocolatey](https://chocolatey.org/) или [MSYS2](https://www.msys2.org/), но это не обязательно - `npm run tauri build` работает отлично.
 
 **Результат:**
 - **macOS**: `src-tauri/target/release/bundle/dmg/ApiAi_*.dmg`
@@ -319,18 +323,24 @@ cargo doc --open
 5. Network Monitor для отладки запросов
 
 ### Для тестирования
-1. Соберите release версию: `cd tauri-app && make build`
+1. Соберите release версию: 
+   - **macOS/Linux:** `cd tauri-app && make build`
+   - **Windows:** `cd tauri-app && npm run tauri build`
 2. Тестируйте на чистой системе
-3. Проверяйте логи в `~/Library/Application Support/com.apiai.desktop/`
+3. Проверяйте логи в `~/Library/Application Support/com.apiai.desktop/` (macOS) или `%APPDATA%\com.apiai.desktop\` (Windows)
 4. Используйте Echo Test для проверки соединения
 5. Проверьте Console (📡) для network logs
 
 ### Для релиза
-1. Обновите версию: `cd tauri-app && make version-bump-patch`
-2. Соберите: `make build`
-3. Протестируйте установщик (.dmg)
+1. Обновите версию: 
+   - **macOS/Linux:** `cd tauri-app && make version-bump-patch`
+   - **Windows:** `cd tauri-app && python scripts/update_version.py bump patch`
+2. Соберите: 
+   - **macOS/Linux:** `make build`
+   - **Windows:** `npm run tauri build`
+3. Протестируйте установщик (.dmg для macOS, .msi/.exe для Windows)
 4. Создайте GitHub Release: `gh release create vX.Y.Z`
-5. Приложите DMG файл из `src-tauri/target/release/bundle/dmg/`
+5. Приложите установщик из `src-tauri/target/release/bundle/`
 
 ---
 
@@ -338,8 +348,10 @@ cargo doc --open
 
 При возникновении проблем:
 1. Проверьте логи (см. разделы выше)
-2. Очистите артефакты сборки: `make clean`
-3. Переустановите зависимости: `npm install`
+2. Очистите артефакты сборки: 
+   - **macOS/Linux:** `cd tauri-app && make clean`
+   - **Windows:** `cd tauri-app\src-tauri && cargo clean`
+3. Переустановите зависимости: `cd tauri-app && npm install`
 4. Проверьте версии инструментов: `node --version`, `rustc --version`
 5. Проверьте Console logs (📡 Network Monitor)
 
