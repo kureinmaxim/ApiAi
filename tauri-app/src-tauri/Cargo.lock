@@ -4178,7 +4178,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-app"
-version = "2.5.2"
+version = "2.5.5"
 dependencies = [
  "apiai-shared",
  "chrono",
