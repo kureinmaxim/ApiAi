@@ -433,7 +433,6 @@ fn import_text_chat(file_path: String) -> Result<ChatHistory, String> {
 }
 
 fn get_config_path() -> std::path::PathBuf {
-
     // 1. Check if config exists in current directory (Project root in dev)
     let current_dir_config = std::path::Path::new("config_qt.json");
     if current_dir_config.exists() {
@@ -446,15 +445,51 @@ fn get_config_path() -> std::path::PathBuf {
         return parent_dir_config.to_path_buf();
     }
 
-    // 3. Check executable directory (Production)
-    if let Ok(exe_path) = std::env::current_exe() {
-        if let Some(exe_dir) = exe_path.parent() {
-            let exe_config = exe_dir.join("config_qt.json");
-            if exe_config.exists() {
-                return exe_config;
+    // 3. Production mode: Use OS-specific app data directory
+    #[cfg(target_os = "windows")]
+    {
+        if let Ok(appdata) = std::env::var("APPDATA") {
+            let config_dir = std::path::Path::new(&appdata).join("com.apiai.app");
+            // Create directory if it doesn't exist
+            if let Err(_) = fs::create_dir_all(&config_dir) {
+                // If we can't create, fall back to current directory
+                return std::path::PathBuf::from("config_qt.json");
             }
-            // If none exists, default to writing to exe dir
-            return exe_config;
+            let config_file = config_dir.join("config.json");
+            // If old config_qt.json exists, migrate it
+            let old_config = config_dir.join("config_qt.json");
+            if old_config.exists() && !config_file.exists() {
+                let _ = fs::copy(&old_config, &config_file);
+            }
+            return config_file;
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        if let Ok(home) = std::env::var("HOME") {
+            let config_dir = std::path::Path::new(&home)
+                .join("Library")
+                .join("Application Support")
+                .join("com.apiai.app");
+            if let Err(_) = fs::create_dir_all(&config_dir) {
+                return std::path::PathBuf::from("config_qt.json");
+            }
+            return config_dir.join("config.json");
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(home) = std::env::var("HOME") {
+            let config_dir = std::path::Path::new(&home)
+                .join(".local")
+                .join("share")
+                .join("com.apiai.app");
+            if let Err(_) = fs::create_dir_all(&config_dir) {
+                return std::path::PathBuf::from("config_qt.json");
+            }
+            return config_dir.join("config.json");
         }
     }
 
