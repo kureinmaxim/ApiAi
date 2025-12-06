@@ -605,7 +605,13 @@ function setupEchoHandler() {
     }
 
     if (useEnc) {
-      encryptionKey = encryptionKeyInput.value;
+      // Normalize encryption key: trim whitespace and remove invisible characters
+      // This is especially important on Windows where copy-paste can add extra characters
+      encryptionKey = encryptionKeyInput.value
+        .trim()
+        .replace(/\0/g, '')
+        .replace(/\r/g, '')
+        .replace(/\n/g, '');
     }
 
     // Log Echo request to history sidebar
@@ -809,7 +815,13 @@ async function sendMessage() {
     }
 
     if (useEnc) {
-      encryptionKey = encryptionKeyInput.value;
+      // Normalize encryption key: trim whitespace and remove invisible characters
+      // This is especially important on Windows where copy-paste can add extra characters
+      encryptionKey = encryptionKeyInput.value
+        .trim()
+        .replace(/\0/g, '')
+        .replace(/\r/g, '')
+        .replace(/\n/g, '');
     }
 
     // Store telegram URL for potential cancellation

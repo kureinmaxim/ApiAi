@@ -78,7 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalTelegramUrl = document.getElementById('modal-telegram-url').value;
         const modalTelegramPort = document.getElementById('modal-telegram-port').value;
         const modalApiKey = document.getElementById('modal-api-key').value;
-        const modalEncryptionKey = document.getElementById('modal-encryption-key').value;
+        // Normalize encryption key: trim whitespace and remove invisible characters
+        // This is especially important on Windows where copy-paste can add extra characters
+        const modalEncryptionKey = document.getElementById('modal-encryption-key').value
+            .trim()
+            .replace(/\0/g, '')
+            .replace(/\r/g, '')
+            .replace(/\n/g, '');
         const modalUseEncryption = document.getElementById('modal-use-encryption').checked;
 
         if (telegramUrl) telegramUrl.value = modalTelegramUrl;

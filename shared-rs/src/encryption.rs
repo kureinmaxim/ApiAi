@@ -4,6 +4,7 @@ use aes_gcm::{
 };
 use anyhow::{anyhow, Result};
 use base64::{engine::general_purpose, Engine as _};
+use hex;
 use rand::RngCore;
 use sha2::{Digest, Sha256};
 
@@ -13,19 +14,23 @@ pub struct SecureMessenger {
 
 impl SecureMessenger {
     pub fn new(key: &str) -> Result<Self> {
-        let key_bytes = if let Ok(decoded) = hex::decode(key) {
+        // Normalize key: trim whitespace and remove any invisible characters
+        // This is especially important on Windows where copy-paste can add extra characters
+        let normalized_key = key.trim().replace('\0', "").replace('\r', "").replace('\n', "");
+        
+        let key_bytes = if let Ok(decoded) = hex::decode(&normalized_key) {
             if decoded.len() == 32 {
                 decoded
             } else {
                 // If hex but wrong length, hash it
                 let mut hasher = Sha256::new();
-                hasher.update(key.as_bytes());
+                hasher.update(normalized_key.as_bytes());
                 hasher.finalize().to_vec()
             }
         } else {
             // Not hex, hash it
             let mut hasher = Sha256::new();
-            hasher.update(key.as_bytes());
+            hasher.update(normalized_key.as_bytes());
             hasher.finalize().to_vec()
         };
 
