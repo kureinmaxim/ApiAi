@@ -117,7 +117,7 @@ body {
 
 .pin-header p {
   color: var(--text-secondary);
-  font-size: 10px;
+  font-size: 11px; /* Увеличено на 1px */
 }
 
 #pin-input {
@@ -127,7 +127,7 @@ body {
   color: var(--text-color);
   padding: 11px;
   border-radius: 8px;
-  font-size: 17px;
+  font-size: 18px; /* Увеличено на 1px */
   text-align: center;
   letter-spacing: 6px;
   outline: none;
@@ -142,7 +142,7 @@ body {
 
 .pin-error {
   color: #ef4444;
-  font-size: 10px;
+  font-size: 11px; /* Увеличено на 1px */
   margin-bottom: 6px;
   animation: shake 0.4s ease;
 }
@@ -165,7 +165,7 @@ body {
 
 .pin-hint {
   color: var(--text-secondary);
-  font-size: 8px;
+  font-size: 9px; /* Увеличено на 1px */
   margin-top: 11px;
   margin-bottom: 11px;
 }
@@ -173,7 +173,7 @@ body {
 #pin-cancel {
   width: 100%;
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 12px; /* Увеличено на 1px */
 }
 
 /* Container */
@@ -224,7 +224,7 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 9px;
+  font-size: 10px; /* Увеличено на 1px */
   color: var(--text-color);
 }
 
@@ -236,7 +236,7 @@ body {
 }
 
 .small-btn {
-  font-size: 9px;
+  font-size: 10px; /* Увеличено на 1px */
   padding: 6px 8px;
   flex: 1;
 }
@@ -248,7 +248,7 @@ body {
 }
 
 .lock-status span {
-  font-size: 14px;
+  font-size: 15px; /* Увеличено на 1px */
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
@@ -286,7 +286,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-size: 20px;
+  font-size: 21px; /* Увеличено на 1px */
   font-weight: 700;
 }
 
@@ -299,7 +299,7 @@ body {
 }
 
 .settings-group>label:first-child {
-  font-size: 9px;
+  font-size: 10px; /* Увеличено на 1px */
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -317,7 +317,7 @@ select {
   border-radius: 6px;
   outline: none;
   transition: all 0.2s ease;
-  font-size: 10px;
+  font-size: 11px; /* Увеличено на 1px */
 }
 
 input:focus,
@@ -353,7 +353,7 @@ input[type="checkbox"].protected-field:disabled {
   align-items: center;
   gap: 6px;
   color: var(--text-color);
-  font-size: 10px;
+  font-size: 11px; /* Увеличено на 1px */
   cursor: pointer;
   transition: color 0.2s ease;
 }
@@ -370,7 +370,7 @@ button {
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 10px;
+  font-size: 11px; /* Увеличено на 1px */
   transition: all 0.2s ease;
   box-shadow: var(--shadow);
 }
@@ -423,6 +423,7 @@ button:active {
   position: relative;
   animation: messageSlide 0.3s ease-out;
   box-shadow: var(--shadow);
+  font-size: 12px; /* Уменьшено на 2px от стандартного размера */
 }
 
 @keyframes messageSlide {
@@ -456,7 +457,7 @@ button:active {
   background: transparent;
   color: var(--text-secondary);
   font-style: italic;
-  font-size: 10px;
+  font-size: 11px; /* Увеличено на 1px */
   text-align: center;
   box-shadow: none;
 }
@@ -469,7 +470,7 @@ button:active {
 }
 
 .provider-info {
-  font-size: 8px;
+  font-size: 9px; /* Увеличено на 1px */
   color: var(--text-secondary);
   margin-top: 6px;
   padding-top: 6px;
@@ -481,7 +482,7 @@ button:active {
   margin-top: 6px;
   padding-top: 6px;
   border-top: 1px solid rgba(148, 163, 184, 0.1);
-  font-size: 8px;
+  font-size: 9px; /* Увеличено на 1px */
   color: var(--text-secondary);
   opacity: 0.7;
   font-family: 'Courier New', monospace;
@@ -507,7 +508,7 @@ textarea {
   resize: none;
   height: 56px;
   font-family: inherit;
-  font-size: 10px;
+  font-size: 11px; /* Увеличено на 1px */
   outline: none;
   transition: all 0.2s ease;
 }
@@ -522,14 +523,14 @@ textarea:focus {
   height: 56px;
   min-width: 70px;
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 12px; /* Увеличено на 1px */
 }
 
 #abort-btn {
   height: 56px;
   min-width: 70px;
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 12px; /* Увеличено на 1px */
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   animation: pulse-glow 2s ease-in-out infinite;
   cursor: pointer;
@@ -571,7 +572,7 @@ textarea:focus {
   color: var(--text-secondary);
   padding: 6px 11px;
   border-radius: 6px;
-  font-size: 9px;
+  font-size: 10px; /* Увеличено на 1px */
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: none;
@@ -593,7 +594,7 @@ textarea:focus {
   background: rgba(15, 20, 34, 0.8);
   border-top: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
-  font-size: 8px;
+  font-size: 9px; /* Увеличено на 1px */
   flex-wrap: wrap;
   gap: 11px 14px;
 }
@@ -751,7 +752,7 @@ textarea:focus {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-size: 20px;
+  font-size: 21px; /* Увеличено на 1px */
   font-weight: 700;
   margin: 0;
 }
@@ -760,7 +761,7 @@ textarea:focus {
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  font-size: 17px;
+  font-size: 18px; /* Увеличено на 1px */
   cursor: pointer;
   padding: 3px 8px;
   border-radius: 6px;
@@ -825,17 +826,17 @@ textarea:focus {
 .library-item-title {
   font-weight: 600;
   color: var(--text-color);
-  font-size: 10px;
+  font-size: 11px; /* Увеличено на 1px */
 }
 
 .library-item-date {
-  font-size: 8px;
+  font-size: 9px; /* Увеличено на 1px */
   color: var(--text-secondary);
 }
 
 .library-item-preview {
   color: var(--text-secondary);
-  font-size: 9px;
+  font-size: 10px; /* Увеличено на 1px */
   margin-bottom: 6px;
   line-height: 1.4;
   display: -webkit-box;
@@ -849,7 +850,7 @@ textarea:focus {
 .library-item-meta {
   display: flex;
   gap: 8px;
-  font-size: 8px;
+  font-size: 9px; /* Увеличено на 1px */
   color: var(--text-secondary);
 }
 
@@ -883,12 +884,12 @@ textarea:focus {
 }
 
 .library-empty-text {
-  font-size: 11px;
+  font-size: 12px; /* Увеличено на 1px */
   margin-bottom: 6px;
 }
 
 .library-empty-hint {
-  font-size: 9px;
+  font-size: 10px; /* Увеличено на 1px */
   opacity: 0.7;
 }
 

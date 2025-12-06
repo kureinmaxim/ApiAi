@@ -27,7 +27,7 @@
 }
 
 .request-history-header h3 {
-    font-size: 10px;
+    font-size: 11px; /* Увеличено на 1px */
     font-weight: 600;
     color: var(--text-color);
     margin: 0;
@@ -69,7 +69,7 @@
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px; /* Увеличено на 1px */
     padding: 4px 7px;
     transition: color 0.2s;
 }
@@ -90,7 +90,7 @@
     border: 1px solid var(--border-color);
     border-radius: 4px;
     color: var(--text-color);
-    font-size: 8px;
+    font-size: 9px; /* Увеличено на 1px */
     cursor: pointer;
 }
 
@@ -116,7 +116,7 @@
 }
 
 .history-empty-text {
-    font-size: 10px;
+    font-size: 11px; /* Увеличено на 1px */
     opacity: 0.6;
 }
 
@@ -144,7 +144,7 @@
 }
 
 .request-time {
-    font-size: 8px;
+    font-size: 9px; /* Увеличено на 1px */
     color: var(--text-secondary);
     margin-bottom: 3px;
 }
@@ -153,12 +153,12 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 8px;
+    font-size: 9px; /* Увеличено на 1px */
     margin-bottom: 3px;
 }
 
 .request-status {
-    font-size: 14px;
+    font-size: 15px; /* Увеличено на 1px */
 }
 
 .request-endpoint {
@@ -170,7 +170,7 @@
 }
 
 .request-method {
-    font-size: 7px;
+    font-size: 8px; /* Увеличено на 1px */
     padding: 1px 4px;
     background: var(--accent-color);
     border-radius: 3px;
@@ -187,7 +187,7 @@
 .console-instructions h3 {
     color: var(--text-color);
     margin-bottom: 11px;
-    font-size: 11px;
+    font-size: 12px; /* Увеличено на 1px */
 }
 
 .os-section {
@@ -201,7 +201,7 @@
 .os-section h4 {
     color: var(--text-color);
     margin-bottom: 7px;
-    font-size: 10px;
+    font-size: 11px; /* Увеличено на 1px */
 }
 
 .os-section ol {
@@ -220,7 +220,7 @@ kbd {
     border-radius: 3px;
     padding: 1px 4px;
     font-family: 'Courier New', monospace;
-    font-size: 8px;
+    font-size: 9px; /* Увеличено на 1px */
     color: var(--text-color);
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
@@ -235,7 +235,7 @@ kbd {
 .console-info h4 {
     color: var(--text-color);
     margin-bottom: 7px;
-    font-size: 10px;
+    font-size: 11px; /* Увеличено на 1px */
 }
 
 .console-info ul {
