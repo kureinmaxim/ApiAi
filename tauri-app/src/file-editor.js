@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const filePath = await open({
                 multiple: false,
+                directory: false,
                 filters: [
                     {
                         name: 'Text Files',
