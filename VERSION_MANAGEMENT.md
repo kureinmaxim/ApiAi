@@ -99,10 +99,56 @@ make version-set v=2.5.0
 
 ---
 
+## 🪟 Команды для Windows
+
+На Windows утилита `make` не установлена по умолчанию. Используйте Python скрипт напрямую:
+
+### Проверить текущую версию
+
+```powershell
+python scripts/update_version.py status
+```
+
+### Синхронизировать конфигурацию
+
+```powershell
+python scripts/update_version.py sync
+```
+
+### Увеличить версию
+
+**Patch (2.4.2 → 2.4.3):**
+```powershell
+python scripts/update_version.py bump patch
+```
+
+**Minor (2.4.2 → 2.5.0):**
+```powershell
+python scripts/update_version.py bump minor
+```
+
+**Major (2.4.2 → 3.0.0):**
+```powershell
+python scripts/update_version.py bump major
+```
+
+### Установить конкретную версию
+
+```powershell
+python scripts/update_version.py sync 2.5.0
+```
+
+**Примечание:** Скрипт автоматически использует UTF-8 кодировку для корректной работы с файлами на Windows.
+
+---
+
 ## 🚀 Типичные сценарии
+
+> **Примечание:** На Windows замените `make` команды на `python scripts/update_version.py` (см. раздел выше).
 
 ### Исправление бага
 
+**macOS/Linux:**
 ```bash
 cd tauri-app
 
@@ -117,8 +163,24 @@ make version-bump-patch
 git diff src-tauri/Cargo.toml src-tauri/tauri.conf.json src/index.html
 ```
 
+**Windows:**
+```powershell
+cd tauri-app
+
+# 1. Проверить текущую версию
+python scripts/update_version.py status
+
+# 2. Увеличить patch версию
+python scripts/update_version.py bump patch
+# 2.4.2 → 2.4.3
+
+# 3. Проверить изменения
+git diff src-tauri/Cargo.toml src-tauri/tauri.conf.json src/index.html
+```
+
 ### Новая функция
 
+**macOS/Linux:**
 ```bash
 cd tauri-app
 
@@ -127,13 +189,32 @@ make version-bump-minor
 # 2.4.2 → 2.5.0
 ```
 
+**Windows:**
+```powershell
+cd tauri-app
+
+# Увеличить minor версию
+python scripts/update_version.py bump minor
+# 2.4.2 → 2.5.0
+```
+
 ### Крупное обновление
 
+**macOS/Linux:**
 ```bash
 cd tauri-app
 
 # Увеличить major версию
 make version-bump-major
+# 2.4.2 → 3.0.0
+```
+
+**Windows:**
+```powershell
+cd tauri-app
+
+# Увеличить major версию
+python scripts/update_version.py bump major
 # 2.4.2 → 3.0.0
 ```
 

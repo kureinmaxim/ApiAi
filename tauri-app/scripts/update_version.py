@@ -19,7 +19,7 @@ INDEX_HTML = TAURI_DIR / "src" / "index.html"
 
 def get_version_from_cargo():
     """Читает версию из Cargo.toml"""
-    with open(CARGO_TOML, 'r') as f:
+    with open(CARGO_TOML, 'r', encoding='utf-8') as f:
         for line in f:
             if line.startswith('version ='):
                 match = re.search(r'"([^"]+)"', line)
@@ -31,32 +31,32 @@ def get_version_from_cargo():
 def set_version_in_cargo(version):
     """Устанавливает версию в Cargo.toml"""
     lines = []
-    with open(CARGO_TOML, 'r') as f:
+    with open(CARGO_TOML, 'r', encoding='utf-8') as f:
         for line in f:
             if line.startswith('version ='):
                 lines.append(f'version = "{version}"\n')
             else:
                 lines.append(line)
     
-    with open(CARGO_TOML, 'w') as f:
+    with open(CARGO_TOML, 'w', encoding='utf-8') as f:
         f.writelines(lines)
 
 
 def set_version_in_tauri_conf(version):
     """Устанавливает версию в tauri.conf.json"""
-    with open(TAURI_CONF, 'r') as f:
+    with open(TAURI_CONF, 'r', encoding='utf-8') as f:
         config = json.load(f)
     
     config['version'] = version
     
-    with open(TAURI_CONF, 'w') as f:
-        json.dump(config, f, indent=2)
+    with open(TAURI_CONF, 'w', encoding='utf-8') as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
         f.write('\n')
 
 
 def set_version_in_html(version):
     """Устанавливает версию в index.html footer"""
-    with open(INDEX_HTML, 'r') as f:
+    with open(INDEX_HTML, 'r', encoding='utf-8') as f:
         content = f.read()
     
     # Find and replace version in footer
@@ -64,7 +64,7 @@ def set_version_in_html(version):
     replacement = f'\\g<1>{version}\\g<2>'
     new_content = re.sub(pattern, replacement, content)
     
-    with open(INDEX_HTML, 'w') as f:
+    with open(INDEX_HTML, 'w', encoding='utf-8') as f:
         f.write(new_content)
 
 
